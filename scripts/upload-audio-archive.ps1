@@ -25,7 +25,9 @@
 param(
   # Must be globally unique on archive.org and cannot be changed later.
   [Parameter(Mandatory = $true)] [string] $Identifier,
-  [string] $Source = "C:\Users\ameen\OneDrive\Desktop\Apps\The Hifz App\Page Audio Recordings",
+  # Left empty and resolved in the body: $PSScriptRoot is not yet populated
+  # while param() defaults are evaluated, so referencing it here yields "".
+  [string] $Source = '',
   [string] $Title  = "Qur'an page recitations (New Madani Mus'haf) - Ayman Suwayd",
   # Upload only page 1, to prove the pipeline before moving 2.47 GB.
   [switch] $Pilot,
@@ -40,6 +42,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Default to the copy that lives beside this repo. Hardcoding an absolute path
+# is what silently broke this: the recordings moved when the old "The Hifz App"
+# folder was merged in, and every run afterwards failed instantly on a path that
+# no longer existed — so the upload appeared to be running and made no progress.
+if (-not $Source) {
+  $Source = Join-Path (Split-Path $PSScriptRoot -Parent) 'Page Audio Recordings'
+}
 
 # pip installs the console script into a Scripts directory that is often not on
 # PATH — notably under the Microsoft Store build of Python — so resolve it

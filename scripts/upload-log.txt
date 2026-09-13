@@ -1,1 +1,15 @@
 Checking what is already uploaded...
+  470 already present; 470 skipped
+Uploading 134 files (0.55 GB) to item 'hifz-app-ayman-suwayd-pages'
+Re-running skips files already present, so an interrupted run is safe.
+Sending in 3 batch(es) of up to 50
+  batch 1 of 3 done (50 files)
+  batch 2 of 3 done (50 files)
+  batch 3 of 3 done (34 files)
+
+Uploaded 134 file(s).
+Test this URL in a browser (allow a minute for archive.org to process):
+  https://archive.org/download/hifz-app-ayman-suwayd-pages/470.mp3
+
+Then set on the host and redeploy:
+  VITE_AUDIO_BASE_URL=https://archive.org/download/hifz-app-ayman-suwayd-pages

@@ -72,6 +72,16 @@ function SummaryStrip({ counts }: { counts: Record<PageStatus, number> }) {
   );
 }
 
+/** Check if a student is "on track" - has minimum required pages in each stage */
+function isOnTrack(counts: Record<PageStatus, number>): boolean {
+  const greenRequired = 3;
+  const orangeRequired = 2; // AMBER
+  const blueRequired = 2;   // RED
+  return (counts.GREEN ?? 0) >= greenRequired &&
+         (counts.AMBER ?? 0) >= orangeRequired &&
+         (counts.RED ?? 0) >= blueRequired;
+}
+
 export default function UstadhClassView({ classId }: { classId: number }) {
   const navigate = useNavigate();
   const [students, setStudents] = useState<StudentSummary[]>([]);
@@ -104,12 +114,17 @@ export default function UstadhClassView({ classId }: { classId: number }) {
         </p>
       ) : (
         <div className="flex flex-col gap-2">
-          {students.map(s => (
+          {students.map(s => {
+            const onTrack = isOnTrack(s.counts);
+            return (
             <button
               key={s.id}
               onClick={() => navigate(`/classes/${classId}/student/${s.id}`)}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all active:scale-[0.98]"
-              style={{ backgroundColor: 'var(--c-bg-card)', border: '1px solid var(--c-border)' }}
+              style={{
+                backgroundColor: 'var(--c-bg-card)',
+                border: onTrack ? '1px solid var(--c-border)' : '2px solid #FF2D2D'
+              }}
             >
               <StudentAvatar student={s} />
               <div className="flex-1 min-w-0">
@@ -120,7 +135,8 @@ export default function UstadhClassView({ classId }: { classId: number }) {
               </div>
               <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--c-text-faint)' }} />
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -50,10 +50,10 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
     textSoft:  'rgba(74,0,0,0.72)',
     icon: Headphones,
   },
-  // ── Test 1 completed — neon blue ───────────────────────────────────────
+  // ── Practiced — neon blue (swapped) ───────────────────────────────────────
   RED: {
-    label: 'Test 1 completed',
-    description: "I've recited this page to the ustadh for the first test",
+    label: 'Practiced',
+    description: "I've practiced it 18 times since my 1st test, and read to a senior as many times as instructed",
     fill:      '#00E1FF',
     accent:    '#0090A8',
     iconBg:    '#8AF0FF',
@@ -62,10 +62,10 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
     textSoft:  'rgba(0,42,51,0.72)',
     icon: BookOpen,
   },
-  // ── Practiced — neon orange ────────────────────────────────────────────
+  // ── In Practice — neon orange (swapped) ────────────────────────────────────────────
   AMBER: {
-    label: 'Practiced',
-    description: "I've practiced it 18 times since my 1st test, and read to a senior as many times as instructed",
+    label: 'In Practice',
+    description: "I've recited this page to the ustadh for the first test",
     fill:      '#FF6600',
     accent:    '#CC4400',
     iconBg:    '#FF9955',
