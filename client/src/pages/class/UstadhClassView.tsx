@@ -39,14 +39,17 @@ function StudentAvatar({ student }: { student: { name: string; avatar_url: strin
   );
 }
 
-/** A row of small color-coded count pills (one per status that has count>0). */
+/** A row of small color-coded count pills (one per status that has count>0).
+ * Shows progress statuses (RED, AMBER, GREEN, BLACK, YELLOW) but not GOLD,
+ * since GOLD is just "memorized" and the useful view is test progression.
+ */
 function SummaryStrip({ counts }: { counts: Record<PageStatus, number> }) {
-  const order: PageStatus[] = ['GOLD', 'GREEN', 'YELLOW', 'AMBER', 'RED', 'BLACK'];
+  const order: PageStatus[] = ['GREEN', 'RED', 'AMBER', 'BLACK', 'YELLOW'];
   const nonZero = order.filter(s => counts[s] > 0);
   if (nonZero.length === 0) {
     return (
       <p className="text-[11px]" style={{ color: 'var(--c-text-faint)' }}>
-        No status set yet
+        No progress yet
       </p>
     );
   }
@@ -77,8 +80,10 @@ export default function UstadhClassView({ classId }: { classId: number }) {
   const load = useCallback(async () => {
     try {
       const data = await api.get<StudentSummary[]>(`/classes/${classId}/students-with-summary`);
+      console.log('[UstadhClassView] API response:', data);
       setStudents(data);
     } catch (err) {
+      console.error('[UstadhClassView] API error:', err);
       toast.error(err instanceof Error ? err.message : 'Failed to load students');
     } finally {
       setLoading(false);
