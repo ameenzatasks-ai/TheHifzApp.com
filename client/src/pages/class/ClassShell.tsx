@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, UserPlus, MoreVertical, Pencil, Trash2, LogOut, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Copy, Check, UserPlus, MoreVertical, Pencil, Trash2, LogOut, ChevronRight, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { classesApi } from '../../api/classes';
 import type { ClassWithMeta } from '../../types';
@@ -10,6 +10,8 @@ import ConfirmModal from '../../components/ConfirmModal';
 import BottomSheet from '../../components/BottomSheet';
 import Spinner from '../../components/Spinner';
 import UstadhClassView from './UstadhClassView';
+import CoUstathsSettings from './CoUstathsSettings';
+import JoinAsUstadhSheet from './JoinAsUstadhSheet';
 
 function CopyCode({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
@@ -31,17 +33,23 @@ function CopyCode({ code }: { code: string }) {
   );
 }
 
-/* ── Kebab menu (Rename/Delete/Leave) ─────────────────────── */
+/* ── Kebab menu (Rename/Delete/Leave/Co-ustadhs) ─────────────────────── */
 function ClassMenu({
   isUstadh,
+  isOwner,
   onRename,
   onDelete,
   onLeave,
+  onManageCoUstadhs,
+  onJoinAsUstadh,
 }: {
   isUstadh: boolean;
+  isOwner: boolean;
   onRename: () => void;
   onDelete: () => void;
   onLeave: () => void;
+  onManageCoUstadhs: () => void;
+  onJoinAsUstadh: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -72,11 +80,23 @@ function ClassMenu({
           style={{
             backgroundColor: 'var(--c-bg-card)',
             border: '1px solid var(--c-border-soft)',
-            minWidth: 180,
+            minWidth: 200,
           }}
         >
           {isUstadh ? (
             <>
+              {isOwner && (
+                <>
+                  <MenuItem icon={Users} label="Manage co-teachers" onClick={() => { setOpen(false); onManageCoUstadhs(); }} />
+                  <div style={{ height: 1, backgroundColor: 'var(--c-border)' }} />
+                </>
+              )}
+              {!isOwner && (
+                <>
+                  <MenuItem icon={Users} label="Join as co-teacher" onClick={() => { setOpen(false); onJoinAsUstadh(); }} />
+                  <div style={{ height: 1, backgroundColor: 'var(--c-border)' }} />
+                </>
+              )}
               <MenuItem icon={Pencil} label="Rename class" onClick={() => { setOpen(false); onRename(); }} />
               <div style={{ height: 1, backgroundColor: 'var(--c-border)' }} />
               <MenuItem icon={Trash2} label="Delete class" destructive onClick={() => { setOpen(false); onDelete(); }} />
@@ -123,6 +143,8 @@ export default function ClassShell() {
   const [cls, setCls] = useState<ClassWithMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [coUstathsOpen, setCoUstathsOpen] = useState(false);
+  const [joinAsUstadhOpen, setJoinAsUstadhOpen] = useState(false);
 
   // Rename / delete / leave modals
   const [renameOpen,  setRenameOpen]  = useState(false);
@@ -235,9 +257,12 @@ export default function ClassShell() {
 
         <ClassMenu
           isUstadh={isUstadh}
+          isOwner={cls.is_owner ?? false}
           onRename={openRename}
           onDelete={() => setDeleteOpen(true)}
           onLeave={() => setLeaveOpen(true)}
+          onManageCoUstadhs={() => setCoUstathsOpen(true)}
+          onJoinAsUstadh={() => setJoinAsUstadhOpen(true)}
         />
       </div>
 
@@ -337,6 +362,26 @@ export default function ClassShell() {
         busy={leaving}
         onConfirm={confirmLeave}
         onCancel={() => setLeaveOpen(false)}
+      />
+
+      {/* Co-ustadhs settings (owner only) */}
+      {cls && (
+        <CoUstathsSettings
+          classId={id}
+          ustadhCode={cls.ustadh_code ?? ''}
+          isOwner={cls.is_owner ?? false}
+          open={coUstathsOpen}
+          onClose={() => setCoUstathsOpen(false)}
+        />
+      )}
+
+      {/* Join as ustadh sheet */}
+      <JoinAsUstadhSheet
+        open={joinAsUstadhOpen}
+        onClose={() => setJoinAsUstadhOpen(false)}
+        onJoined={(joined) => {
+          setCls(prev => prev ? { ...prev, ...joined } : joined);
+        }}
       />
     </div>
   );

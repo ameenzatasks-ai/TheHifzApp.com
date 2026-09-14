@@ -33,6 +33,7 @@ export interface Class {
   name: string;
   ustadh_id: number;
   join_code: string;
+  ustadh_code: string;
   created_at: string;
 }
 
