@@ -8,7 +8,7 @@
  */
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, LayoutGrid, TableProperties, ChevronRight, Star, BookOpen, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Star, BookOpen, RotateCcw, TableProperties } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { hifzApi, type StatusPage } from '../../api/hifz';
 import { classesApi } from '../../api/classes';
@@ -27,27 +27,6 @@ const SCORE_COLOURS: Record<number, string> = {
 
 interface StudentInfo { id: number; name: string; avatar_url: string | null }
 type ViewMode = 'nazira' | 'hifz';
-type NazTab = 'overview' | 'grid';
-
-function StudentAvatar({ student }: { student: { name: string; avatar_url: string | null } }) {
-  if (student.avatar_url) {
-    return (
-      <img
-        src={student.avatar_url}
-        alt={student.name}
-        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-      />
-    );
-  }
-  return (
-    <div
-      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
-      style={{ backgroundColor: 'var(--c-green-dark)', color: 'var(--c-gold)' }}
-    >
-      {student.name[0]?.toUpperCase() ?? '?'}
-    </div>
-  );
-}
 
 /** Group a flat pages array by status. */
 function groupPages(pages: StatusPage[]): Record<PageStatus, number[]> {
@@ -504,19 +483,25 @@ export default function StudentDetail() {
 
   const [student, setStudent] = useState<StudentInfo | null>(null);
   const [pages, setPages] = useState<StatusPage[]>([]);
+  const [allStudents, setAllStudents] = useState<StudentInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('nazira');
-  const [nazTab, setNazTab] = useState<NazTab>('overview');
 
   const load = useCallback(async () => {
     try {
-      // Load student info + all current pages in parallel
-      const [pagesRes, infoRes] = await Promise.all([
+      // Load student info + all current pages + all students in class
+      const [pagesRes, infoRes, classRes] = await Promise.all([
         hifzApi.studentAllPages(sId),
         classesApi.getStudentPages(cId, sId),
+        classesApi.get(cId),
       ]);
       setPages(pagesRes.pages);
       setStudent(infoRes.student as StudentInfo);
+
+      // Extract students from class detail
+      if (classRes.students) {
+        setAllStudents(classRes.students);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to load student');
       navigate(-1);
@@ -526,6 +511,10 @@ export default function StudentDetail() {
   }, [cId, sId, navigate]);
 
   useEffect(() => { load(); }, [load]);
+
+  function switchStudent(newStudentId: number) {
+    navigate(`/classes/${cId}/student/${newStudentId}`);
+  }
 
   const grouped = groupPages(pages);
   const totalTracked = pages.length;
@@ -553,17 +542,34 @@ export default function StudentDetail() {
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        {student && <StudentAvatar student={student} />}
-
         <div className="flex-1 min-w-0">
-          <h1 className="font-semibold text-base truncate" style={{ color: 'var(--c-text)' }}>
-            {student?.name ?? 'Student'}
-          </h1>
-          <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--c-text-muted)' }}>
+          <h1 className="font-semibold text-base" style={{ color: 'var(--c-text)' }}>
             {viewMode === 'hifz' ? 'Hifz tracking' : 'Nazirah tracking'}
-          </p>
+          </h1>
         </div>
       </div>
+
+      {/* ── Student tabs (like Google tabs) ────────────────── */}
+      {allStudents.length > 0 && (
+        <div
+          className="flex gap-0 overflow-x-auto flex-shrink-0 border-b"
+          style={{ backgroundColor: 'var(--c-bg-nav)', borderColor: 'var(--c-border)' }}
+        >
+          {allStudents.map(s => (
+            <button
+              key={s.id}
+              onClick={() => switchStudent(s.id)}
+              className="px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0"
+              style={{
+                color: sId === s.id ? 'var(--c-gold)' : 'var(--c-text-muted)',
+                borderBottom: sId === s.id ? '2px solid var(--c-gold)' : '2px solid transparent',
+              }}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── Nazira / Hifz mode toggle ──────────────────────── */}
       <div className="px-4 pt-3 pb-1 flex-shrink-0" style={{ backgroundColor: 'var(--c-bg-nav)' }}>
@@ -588,32 +594,6 @@ export default function StudentDetail() {
         </div>
       </div>
 
-      {/* ── Nazira sub-tabs ────────────────────────────────── */}
-      {viewMode === 'nazira' && (
-        <div
-          className="flex border-b flex-shrink-0"
-          style={{ borderColor: 'var(--c-border)', backgroundColor: 'var(--c-bg-nav)' }}
-        >
-          {([
-            { key: 'overview' as NazTab, label: 'Overview', Icon: TableProperties },
-            { key: 'grid' as NazTab,     label: 'Juz Grid', Icon: LayoutGrid },
-          ]).map(({ key, label, Icon }) => (
-            <button
-              key={key}
-              onClick={() => setNazTab(key)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold transition-colors"
-              style={{
-                color: nazTab === key ? 'var(--c-gold)' : 'var(--c-text-muted)',
-                borderBottom: nazTab === key ? '2px solid var(--c-gold)' : '2px solid transparent',
-              }}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* ── Hifz sub-tabs (single tab — Enter Scores) ────── */}
       {viewMode === 'hifz' && (
         <div
@@ -631,16 +611,17 @@ export default function StudentDetail() {
       )}
 
       {/* ── Body ────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0">
-        {/* Nazira — Overview */}
-        {viewMode === 'nazira' && nazTab === 'overview' && (
-          <div className="h-full overflow-y-auto px-4 py-4 pb-layout scroll-container">
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {/* Nazira — Overview + Grid (always stacked, no tabs) */}
+        {viewMode === 'nazira' && (
+          <div className="px-4 py-4 pb-layout scroll-container">
+            {/* Overview section */}
             <GroupedPages grouped={grouped} totalTracked={totalTracked} />
 
             {/* See previous logs */}
             <button
               onClick={() => navigate(`/classes/${cId}/student/${sId}/nazirah-logs`)}
-              className="mt-4 w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-left transition-all active:scale-[0.98]"
+              className="mt-4 w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-left transition-all active:scale-[0.98] mb-6"
               style={{ backgroundColor: 'var(--c-bg-card)', border: '1px solid var(--c-border)' }}
             >
               <div>
@@ -653,12 +634,12 @@ export default function StudentDetail() {
               </div>
               <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--c-text-faint)' }} />
             </button>
-          </div>
-        )}
 
-        {/* Nazira — Juz Grid */}
-        {viewMode === 'nazira' && nazTab === 'grid' && (
-          <JuzGrid studentId={sId} />
+            {/* Juz Grid (always shown, no separate tab) */}
+            <div className="mt-6">
+              <JuzGrid studentId={sId} />
+            </div>
+          </div>
         )}
 
         {/* Hifz — Enter Scores */}
