@@ -78,7 +78,16 @@ const stmtSummary = db.prepare(`
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 async function ustadhTeaches(ustadhId: number, studentId: number): Promise<boolean> {
-  return !!await stmtTeaches.get(ustadhId, studentId);
+  // Check if ustadh owns a class with this student
+  if (await stmtTeaches.get(ustadhId, studentId)) return true;
+
+  // Check if ustadh is a co-ustadh in any class with this student
+  return !!await db.prepare(`
+    SELECT 1 FROM enrolments e
+    JOIN class_ustadhs cu ON cu.class_id = e.class_id
+    WHERE cu.ustadh_id = ? AND e.student_id = ?
+    LIMIT 1
+  `).get(ustadhId, studentId);
 }
 
 async function buildJuzGrid(studentId: number, juzNumber: number) {

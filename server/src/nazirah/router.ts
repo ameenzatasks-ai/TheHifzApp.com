@@ -18,12 +18,22 @@ import { sweepRetest } from '../hifz/retest';
 
 const router = Router();
 
-/** Confirms an ustadh teaches the given student in at least one of their classes. */
+/** Confirms an ustadh teaches the given student (owner or co-ustadh). */
 async function ustadhTeaches(ustadhId: number, studentId: number): Promise<boolean> {
-  return !!await db.prepare(`
+  // Check if ustadh owns a class with this student
+  const isOwner = !!await db.prepare(`
     SELECT 1 FROM enrolments e
     JOIN classes c ON c.id = e.class_id
     WHERE c.ustadh_id = ? AND e.student_id = ?
+    LIMIT 1
+  `).get(ustadhId, studentId);
+  if (isOwner) return true;
+
+  // Check if ustadh is a co-ustadh in any class with this student
+  return !!await db.prepare(`
+    SELECT 1 FROM enrolments e
+    JOIN class_ustadhs cu ON cu.class_id = e.class_id
+    WHERE cu.ustadh_id = ? AND e.student_id = ?
     LIMIT 1
   `).get(ustadhId, studentId);
 }
