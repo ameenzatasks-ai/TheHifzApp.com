@@ -52,9 +52,16 @@ export default function ClassSheet({ open, onClose, isUstadh, onSuccess }: Props
         onSuccess({ ...created, is_owner: true }, 'create');
         toast.success('Class created');
       } else {
-        const joined = await classesApi.join(value.toUpperCase());
+        const upperValue = value.toUpperCase();
+        // Check if it's an ustadh code (starts with USTADH-) or student join code
+        const isUstadhCode = upperValue.startsWith('USTADH-');
+
+        const joined = isUstadhCode && isUstadh
+          ? await classesApi.joinAsUstadh(upperValue)
+          : await classesApi.join(upperValue);
+
         onSuccess(joined, 'join');
-        toast.success('Joined class!');
+        toast.success(isUstadhCode ? 'Joined as co-teacher!' : 'Joined class!');
       }
       close();
     } catch (err) {
@@ -136,7 +143,11 @@ export default function ClassSheet({ open, onClose, isUstadh, onSuccess }: Props
             <input
               autoFocus
               type="text"
-              placeholder={mode === 'create' ? 'Class name' : 'Enter join code (e.g. ABC123)'}
+              placeholder={mode === 'create'
+                ? 'Class name'
+                : isUstadh
+                  ? 'Enter join code (e.g. ABC123 or USTADH-XYZ)'
+                  : 'Enter join code (e.g. ABC123)'}
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
