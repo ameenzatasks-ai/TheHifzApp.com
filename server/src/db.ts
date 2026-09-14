@@ -460,6 +460,30 @@ export async function runMigrations(): Promise<void> {
     await db.exec('CREATE INDEX IF NOT EXISTS idx_history_student_time ON status_history(student_id, changed_at DESC)');
     console.log('status_history repair complete.');
   }
+
+  // ── Ustadh Code (co-teacher access) ──────────────────────────────────────────
+  // Each class gets a reusable code that only ustadhs can use to join as co-teachers.
+  // This prevents unauthorized ustadhs from accessing the class.
+  const classColsUstadh = await db.prepare('PRAGMA table_info(classes)').all() as Array<{ name: string }>;
+  if (classColsUstadh.length > 0 && !classColsUstadh.some(c => c.name === 'ustadh_code')) {
+    await db.exec('ALTER TABLE classes ADD COLUMN ustadh_code TEXT UNIQUE NOT NULL DEFAULT ""');
+    console.log('Added ustadh_code column to classes.');
+  }
+
+  // Create class_ustadhs table to track authorized co-ustadhs
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS class_ustadhs (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      class_id     INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+      ustadh_id    INTEGER NOT NULL REFERENCES users(id),
+      added_by     INTEGER NOT NULL REFERENCES users(id),
+      added_at     TEXT    NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(class_id, ustadh_id)
+    )
+  `);
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_class_ustadhs_class ON class_ustadhs(class_id)');
+  await db.exec('CREATE INDEX IF NOT EXISTS idx_class_ustadhs_ustadh ON class_ustadhs(ustadh_id)');
+  console.log('Ustadh Code security migration complete.');
 }
 
 // Migrations are NOT run here any more. They used to be, because better-sqlite3
