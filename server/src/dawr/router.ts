@@ -46,11 +46,22 @@ export const SCORE_COLOURS: Record<number, string> = {
 
 /* ── Helpers ─────────────────────────────────────────────────── */
 async function ustadhTeaches(ustadhId: number, studentId: number): Promise<boolean> {
-  return !!await db
+  // Check if ustadh owns a class with this student
+  const isOwner = !!await db
     .prepare(
       `SELECT 1 FROM enrolments e
        JOIN classes c ON c.id = e.class_id
        WHERE c.ustadh_id = ? AND e.student_id = ? LIMIT 1`,
+    )
+    .get(ustadhId, studentId);
+  if (isOwner) return true;
+
+  // Check if ustadh is a co-ustadh in any class with this student
+  return !!await db
+    .prepare(
+      `SELECT 1 FROM enrolments e
+       JOIN class_ustadhs cu ON cu.class_id = e.class_id
+       WHERE cu.ustadh_id = ? AND e.student_id = ? LIMIT 1`,
     )
     .get(ustadhId, studentId);
 }
