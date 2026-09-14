@@ -466,7 +466,7 @@ export async function runMigrations(): Promise<void> {
   // This prevents unauthorized ustadhs from accessing the class.
   const classColsUstadh = await db.prepare('PRAGMA table_info(classes)').all() as Array<{ name: string }>;
   if (classColsUstadh.length > 0 && !classColsUstadh.some(c => c.name === 'ustadh_code')) {
-    await db.exec('ALTER TABLE classes ADD COLUMN ustadh_code TEXT UNIQUE NOT NULL DEFAULT ""');
+    await db.exec('ALTER TABLE classes ADD COLUMN ustadh_code TEXT NOT NULL DEFAULT ""');
     console.log('Added ustadh_code column to classes.');
   }
 
