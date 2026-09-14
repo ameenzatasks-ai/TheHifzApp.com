@@ -31,6 +31,24 @@ async function generateJoinCode(): Promise<string> {
   throw new Error('Could not allocate an unused join code');
 }
 
+async function generateUstadhCode(): Promise<string> {
+  for (let attempt = 0; attempt < MAX_JOIN_CODE_ATTEMPTS; attempt++) {
+    const code = 'USTADH-' + nanoid();
+    const taken = await db.prepare('SELECT id FROM classes WHERE ustadh_code = ?').get(code);
+    if (!taken) return code;
+  }
+  throw new Error('Could not allocate an unused ustadh code');
+}
+
+/** Check if user is authorized ustadh for the class (owner or co-ustadh) */
+async function isAuthorizedUstadh(classId: number, ustadhId: number): Promise<boolean> {
+  const owner = await db.prepare('SELECT id FROM classes WHERE id = ? AND ustadh_id = ?').get(classId, ustadhId);
+  if (owner) return true;
+
+  const coUstadh = await db.prepare('SELECT id FROM class_ustadhs WHERE class_id = ? AND ustadh_id = ?').get(classId, ustadhId);
+  return !!coUstadh;
+}
+
 const router = Router();
 
 // POST /api/classes — Ustadh creates a class
@@ -41,9 +59,10 @@ router.post('/', authenticate, requireRole('ustadh'), async (req: AuthRequest, r
     return;
   }
   const joinCode = await generateJoinCode();
+  const ustadhCode = await generateUstadhCode();
   const result = await db
-    .prepare('INSERT INTO classes (name, ustadh_id, join_code) VALUES (?, ?, ?)')
-    .run(parsed.data.name, req.user!.id, joinCode);
+    .prepare('INSERT INTO classes (name, ustadh_id, join_code, ustadh_code) VALUES (?, ?, ?, ?)')
+    .run(parsed.data.name, req.user!.id, joinCode, ustadhCode);
   const cls = await db.prepare('SELECT * FROM classes WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(cls);
 });
@@ -201,8 +220,8 @@ router.delete('/:id/leave', authenticate, requireRole('student'), async (req: Au
 // GET /api/classes/:id/students — student list with latest snapshot (Ustadh only)
 router.get('/:id/students', authenticate, requireRole('ustadh'), async (req: AuthRequest, res: Response): Promise<void> => {
   const classId = parseInt(req.params.id, 10);
-  const cls = await db.prepare('SELECT id FROM classes WHERE id = ? AND ustadh_id = ?').get(classId, req.user!.id);
-  if (!cls) { res.status(404).json({ error: 'Class not found' }); return; }
+  const authorized = await isAuthorizedUstadh(classId, req.user!.id);
+  if (!authorized) { res.status(404).json({ error: 'Class not found' }); return; }
 
   const students = await db
     .prepare(`
@@ -226,8 +245,8 @@ router.get('/:id/students/:studentId/pages', authenticate, requireRole('ustadh')
   const classId = parseInt(req.params.id, 10);
   const studentId = parseInt(req.params.studentId, 10);
 
-  const cls = await db.prepare('SELECT id FROM classes WHERE id = ? AND ustadh_id = ?').get(classId, req.user!.id);
-  if (!cls) { res.status(404).json({ error: 'Class not found' }); return; }
+  const authorized = await isAuthorizedUstadh(classId, req.user!.id);
+  if (!authorized) { res.status(404).json({ error: 'Class not found' }); return; }
 
   const enrolment = await db.prepare('SELECT id FROM enrolments WHERE class_id = ? AND student_id = ?').get(classId, studentId);
   if (!enrolment) { res.status(404).json({ error: 'Student not enrolled' }); return; }
@@ -267,8 +286,8 @@ router.get('/:id/students/:studentId/summary', authenticate, requireRole('ustadh
   const classId = parseInt(req.params.id, 10);
   const studentId = parseInt(req.params.studentId, 10);
 
-  const cls = await db.prepare('SELECT id FROM classes WHERE id = ? AND ustadh_id = ?').get(classId, req.user!.id);
-  if (!cls) { res.status(404).json({ error: 'Class not found' }); return; }
+  const authorized = await isAuthorizedUstadh(classId, req.user!.id);
+  if (!authorized) { res.status(404).json({ error: 'Class not found' }); return; }
 
   const enrolment = await db.prepare('SELECT id FROM enrolments WHERE class_id = ? AND student_id = ?').get(classId, studentId);
   if (!enrolment) { res.status(404).json({ error: 'Student not enrolled' }); return; }
@@ -280,8 +299,8 @@ router.get('/:id/students/:studentId/summary', authenticate, requireRole('ustadh
 // GET /api/classes/:id/students-with-summary — Ustadh roster + counts per student
 router.get('/:id/students-with-summary', authenticate, requireRole('ustadh'), async (req: AuthRequest, res: Response): Promise<void> => {
   const classId = parseInt(req.params.id, 10);
-  const cls = await db.prepare('SELECT id FROM classes WHERE id = ? AND ustadh_id = ?').get(classId, req.user!.id);
-  if (!cls) { res.status(404).json({ error: 'Class not found' }); return; }
+  const authorized = await isAuthorizedUstadh(classId, req.user!.id);
+  if (!authorized) { res.status(404).json({ error: 'Class not found' }); return; }
 
   const students = await db.prepare(`
     SELECT u.id, u.name, u.email, u.avatar_url, e.joined_at
@@ -296,6 +315,74 @@ router.get('/:id/students-with-summary', authenticate, requireRole('ustadh'), as
   res.json(await Promise.all(
     students.map(async s => ({ ...s, counts: await buildStudentCounts(s.id) })),
   ));
+});
+
+// POST /api/classes/join-ustadh — Ustadh joins a class as co-teacher using ustadh code
+router.post('/join-ustadh', authenticate, requireRole('ustadh'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const parsed = z.object({ ustadhCode: z.string().min(1) }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'ustadhCode required' }); return; }
+
+  const code = parsed.data.ustadhCode.toUpperCase();
+  const cls = await db.prepare('SELECT * FROM classes WHERE ustadh_code = ?').get(code) as any;
+  if (!cls) { res.status(404).json({ error: 'Invalid ustadh code' }); return; }
+
+  // Prevent joining own class twice
+  if (cls.ustadh_id === req.user!.id) {
+    res.status(409).json({ error: 'Cannot join your own class as co-ustadh' });
+    return;
+  }
+
+  const existing = await db
+    .prepare('SELECT id FROM class_ustadhs WHERE class_id = ? AND ustadh_id = ?')
+    .get(cls.id, req.user!.id);
+  if (existing) { res.status(409).json({ error: 'Already a co-ustadh in this class' }); return; }
+
+  await db
+    .prepare('INSERT INTO class_ustadhs (class_id, ustadh_id, added_by) VALUES (?, ?, ?)')
+    .run(cls.id, req.user!.id, cls.ustadh_id);
+
+  const ustadh = await db.prepare('SELECT name, avatar_url FROM users WHERE id = ?').get(cls.ustadh_id) as any;
+  res.status(201).json({ ...cls, ustadh_name: ustadh?.name, ustadh_avatar: ustadh?.avatar_url });
+});
+
+// GET /api/classes/:id/co-ustadhs — List co-ustadhs for a class
+router.get('/:id/co-ustadhs', authenticate, requireRole('ustadh'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const classId = parseInt(req.params.id, 10);
+  const authorized = await isAuthorizedUstadh(classId, req.user!.id);
+  if (!authorized) { res.status(404).json({ error: 'Class not found' }); return; }
+
+  const coUstadhs = await db.prepare(`
+    SELECT cu.id, u.id as ustadh_id, u.name, u.email, u.avatar_url, cu.added_at,
+           added_by_user.name as added_by_name
+    FROM class_ustadhs cu
+    JOIN users u ON u.id = cu.ustadh_id
+    LEFT JOIN users added_by_user ON added_by_user.id = cu.added_by
+    WHERE cu.class_id = ?
+    ORDER BY cu.added_at DESC
+  `).all(classId);
+
+  res.json(coUstadhs);
+});
+
+// DELETE /api/classes/:id/co-ustadhs/:ustadhId — Revoke co-ustadh access
+router.delete('/:id/co-ustadhs/:ustadhId', authenticate, requireRole('ustadh'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const classId = parseInt(req.params.id, 10);
+  const ustadhId = parseInt(req.params.ustadhId, 10);
+
+  // Only owner can revoke access
+  const cls = await db.prepare('SELECT id FROM classes WHERE id = ? AND ustadh_id = ?').get(classId, req.user!.id);
+  if (!cls) { res.status(404).json({ error: 'Class not found' }); return; }
+
+  const result = await db
+    .prepare('DELETE FROM class_ustadhs WHERE class_id = ? AND ustadh_id = ?')
+    .run(classId, ustadhId);
+
+  if (result.changes === 0) {
+    res.status(404).json({ error: 'Co-ustadh not found' });
+    return;
+  }
+
+  res.json({ message: 'Co-ustadh access revoked' });
 });
 
 export default router;
