@@ -9,7 +9,7 @@
  * than left playing in the background.
  */
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Play, Pause, AlertCircle, RotateCw } from 'lucide-react';
+import { ArrowLeft, Play, Pause, AlertCircle, RotateCw, SkipBack, SkipForward } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { juzForPage } from '../../../shared/juz-map';
 
@@ -42,6 +42,7 @@ export default function ListenPage() {
   const [current,  setCurrent]  = useState(0);
   const [duration, setDuration] = useState(0);
   const [attempt,  setAttempt]  = useState(0);
+  const [speed,    setSpeed]    = useState(1);
 
   const audioRef   = useRef<HTMLAudioElement | null>(null);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -113,6 +114,22 @@ export default function ListenPage() {
     if (!el || !Number.isFinite(duration) || duration <= 0) return;
     el.currentTime = to;
     setCurrent(to);
+  }
+
+  function skip(seconds: number) {
+    const el = audioRef.current;
+    if (!el || !Number.isFinite(duration) || duration <= 0) return;
+    const newTime = Math.max(0, Math.min(duration, current + seconds));
+    el.currentTime = newTime;
+    setCurrent(newTime);
+  }
+
+  function changeSpeed(newSpeed: number) {
+    setSpeed(newSpeed);
+    const el = audioRef.current;
+    if (el) {
+      el.playbackRate = newSpeed;
+    }
   }
 
   return (
@@ -201,9 +218,7 @@ export default function ListenPage() {
                 onTimeUpdate={e => setCurrent(e.currentTarget.currentTime)}
                 onLoadedMetadata={e => {
                   setDuration(e.currentTarget.duration);
-                  // Retries count CONSECUTIVE failures. Once a load succeeds
-                  // the slate is clean, so an earlier blip cannot make a much
-                  // later one give up prematurely.
+                  e.currentTarget.playbackRate = speed;
                   setAttempt(0);
                 }}
                 onWaiting={() => setLoading(true)}
@@ -231,21 +246,42 @@ export default function ListenPage() {
                 </div>
               ) : (
                 <>
-                  <button
-                    onClick={toggle}
-                    className="mx-auto flex items-center justify-center rounded-full transition-all active:scale-95"
-                    style={{
-                      width: 132, height: 132,
-                      backgroundColor: 'var(--c-gold)',
-                      color: '#0d0d0d',
-                      boxShadow: '0 8px 28px rgba(0,0,0,0.18)',
-                    }}
-                    aria-label={playing ? `Pause page ${pageNum}` : `Play page ${pageNum}`}
-                  >
-                    {playing
-                      ? <Pause className="w-14 h-14" fill="currentColor" strokeWidth={0} />
-                      : <Play  className="w-14 h-14 ml-2" fill="currentColor" strokeWidth={0} />}
-                  </button>
+                  {/* Skip back, Play/Pause, Skip forward */}
+                  <div className="flex items-center justify-center gap-6 mb-6">
+                    <button
+                      onClick={() => skip(-5)}
+                      className="p-3 rounded-full transition-all active:scale-90"
+                      style={{ backgroundColor: 'var(--c-bg-subtle)', color: 'var(--c-text)' }}
+                      title="Go back 5 seconds"
+                    >
+                      <SkipBack className="w-6 h-6" />
+                    </button>
+
+                    <button
+                      onClick={toggle}
+                      className="flex items-center justify-center rounded-full transition-all active:scale-95"
+                      style={{
+                        width: 120, height: 120,
+                        backgroundColor: 'var(--c-gold)',
+                        color: '#0d0d0d',
+                        boxShadow: '0 8px 28px rgba(0,0,0,0.18)',
+                      }}
+                      aria-label={playing ? `Pause page ${pageNum}` : `Play page ${pageNum}`}
+                    >
+                      {playing
+                        ? <Pause className="w-12 h-12" fill="currentColor" strokeWidth={0} />
+                        : <Play  className="w-12 h-12 ml-1" fill="currentColor" strokeWidth={0} />}
+                    </button>
+
+                    <button
+                      onClick={() => skip(5)}
+                      className="p-3 rounded-full transition-all active:scale-90"
+                      style={{ backgroundColor: 'var(--c-bg-subtle)', color: 'var(--c-text)' }}
+                      title="Skip forward 5 seconds"
+                    >
+                      <SkipForward className="w-6 h-6" />
+                    </button>
+                  </div>
 
                   {/* Scrub bar — a page can run several minutes */}
                   <input
@@ -256,13 +292,31 @@ export default function ListenPage() {
                     value={current}
                     onChange={e => seek(parseFloat(e.target.value))}
                     disabled={!duration}
-                    className="w-full mt-7 accent-current"
+                    className="w-full accent-current"
                     style={{ accentColor: 'var(--c-gold)' }}
                     aria-label="Seek"
                   />
-                  <div className="flex justify-between text-[11px] mt-1" style={{ color: 'var(--c-text-muted)' }}>
+                  <div className="flex justify-between text-[11px] mt-1 mb-6" style={{ color: 'var(--c-text-muted)' }}>
                     <span>{formatTime(current)}</span>
                     <span>{loading ? 'Loading…' : formatTime(duration)}</span>
+                  </div>
+
+                  {/* Speed controls */}
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {[1, 1.25, 1.5, 1.75, 2].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => changeSpeed(s)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95"
+                        style={{
+                          backgroundColor: speed === s ? 'var(--c-gold)' : 'var(--c-bg-subtle)',
+                          color: speed === s ? '#0d0d0d' : 'var(--c-text)',
+                          border: speed === s ? 'none' : '1px solid var(--c-border)',
+                        }}
+                      >
+                        {s}x
+                      </button>
+                    ))}
                   </div>
                 </>
               )}
