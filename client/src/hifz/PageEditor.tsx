@@ -155,35 +155,35 @@ export default function PageEditor({
         {/* 6 status cards */}
         <div className="p-3 flex flex-col gap-2">
           {ALL_STATUSES.map(s => (
-            <StatusCard
-              key={s}
-              status={s}
-              isCurrent={currentStatus === s}
-              onClick={() => onSelect(s)}
-            />
+            <div key={s} className="flex gap-2 items-stretch">
+              <StatusCard
+                status={s}
+                isCurrent={currentStatus === s}
+                onClick={() => onSelect(s)}
+              />
+              {s === 'BLACK' && (
+                <button
+                  onClick={() => navigate(`/listen?page=${pageNumber}`)}
+                  className="px-3 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center justify-center gap-1.5 flex-shrink-0"
+                  style={{
+                    backgroundColor: 'var(--c-gold)',
+                    color: '#0d0d0d',
+                  }}
+                  title="Listen to this page"
+                >
+                  <Headphones className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           ))}
         </div>
 
-        {/* Listen to this page button */}
-        <div className="px-3 pb-3 flex gap-2">
-          <button
-            onClick={() => navigate(`/listen?page=${pageNumber}`)}
-            className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center justify-center gap-1.5"
-            style={{
-              backgroundColor: 'var(--c-gold)',
-              color: '#0d0d0d',
-            }}
-            aria-label="Listen to this page"
-          >
-            <Headphones className="w-4 h-4" />
-            Listen to this page
-          </button>
-
-          {/* Untouch (only if status set) */}
-          {currentStatus !== null && (
+        {/* Untouch (only if status set) */}
+        {currentStatus !== null && (
+          <div className="px-3 pb-3">
             <button
               onClick={onUntouch}
-              className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95"
+              className="w-full py-2.5 rounded-xl text-xs font-semibold transition-all active:scale-95"
               style={{
                 backgroundColor: 'var(--c-bg-subtle)',
                 color: 'var(--c-text-muted)',
@@ -192,8 +192,8 @@ export default function PageEditor({
             >
               Mark as untouched
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
