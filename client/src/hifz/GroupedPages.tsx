@@ -1,13 +1,21 @@
 /**
  * GroupedPages — pages grouped by colour status.
  * Consecutive page runs are compressed to ranges: [1,2,3,5] → "1–3", "5"
+ *
+ * Interactive: clicking AMBER (In Practice) pages triggers a practice counter.
  */
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import type { PageStatus } from '../../../shared/juz-map';
 import { PALETTE, ALL_STATUSES } from './palette';
+import PracticeCounter from './PracticeCounter';
+import { hifzApi } from '../api/hifz';
 
 interface Props {
   grouped: Partial<Record<PageStatus, number[]>>;
   totalTracked?: number;
+  studentId?: number;  /** If provided, updating student's pages (ustadh view) */
+  onPageUpdate?: () => void;  /** Called after page status updates */
 }
 
 /** Convert a sorted array of page numbers into display tokens.
@@ -31,8 +39,24 @@ function toRanges(pages: number[]): string[] {
   return out;
 }
 
-export default function GroupedPages({ grouped, totalTracked }: Props) {
+export default function GroupedPages({ grouped, totalTracked, studentId, onPageUpdate }: Props) {
   const nonEmpty = ALL_STATUSES.filter(s => (grouped[s]?.length ?? 0) > 0);
+  const [practiceCounter, setPracticeCounter] = useState<{ open: boolean; page: number }>({ open: false, page: 0 });
+
+  const handlePracticeConfirm = async (page: number) => {
+    try {
+      if (studentId) {
+        await hifzApi.setStudentPage(page, studentId, 'GREEN');
+      } else {
+        await hifzApi.setPage(page, 'GREEN');
+      }
+      toast.success('Page marked as completed!');
+      setPracticeCounter({ open: false, page: 0 });
+      onPageUpdate?.();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update page');
+    }
+  };
 
   if (nonEmpty.length === 0) {
     return (
@@ -55,6 +79,7 @@ export default function GroupedPages({ grouped, totalTracked }: Props) {
         const Icon = p.icon;
         const pages  = grouped[status]!;
         const ranges = toRanges(pages);
+        const isAMBER = status === 'AMBER';
 
         return (
           <div
@@ -62,26 +87,29 @@ export default function GroupedPages({ grouped, totalTracked }: Props) {
             className="rounded-2xl overflow-hidden"
             style={{ backgroundColor: 'var(--c-bg-card)', border: '1px solid var(--c-border)' }}
           >
-            {/* Status header */}
+            {/* Status header — clickable for AMBER (In Practice) */}
             <div
-              className="flex items-center gap-2.5 px-4 py-2.5"
+              onClick={() => isAMBER && pages.length > 0 && setPracticeCounter({ open: true, page: pages[0] })}
+              className={isAMBER && pages.length > 0 ? 'cursor-pointer active:opacity-90 transition-opacity' : ''}
               style={{ backgroundColor: p.fill }}
             >
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: p.iconBg }}
-              >
-                <Icon className="w-3.5 h-3.5" style={{ color: p.iconColor }} strokeWidth={2.25} />
+              <div className="flex items-center gap-2.5 px-4 py-2.5">
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: p.iconBg }}
+                >
+                  <Icon className="w-3.5 h-3.5" style={{ color: p.iconColor }} strokeWidth={2.25} />
+                </div>
+                <span className="font-bold text-sm flex-1" style={{ color: p.text }}>
+                  {p.label}
+                </span>
+                <span
+                  className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: p.iconBg, color: p.iconColor }}
+                >
+                  {pages.length}
+                </span>
               </div>
-              <span className="font-bold text-sm flex-1" style={{ color: p.text }}>
-                {p.label}
-              </span>
-              <span
-                className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: p.iconBg, color: p.iconColor }}
-              >
-                {pages.length}
-              </span>
             </div>
 
             {/* Range chips */}
@@ -103,6 +131,14 @@ export default function GroupedPages({ grouped, totalTracked }: Props) {
           </div>
         );
       })}
+
+      {/* Practice counter modal */}
+      <PracticeCounter
+        open={practiceCounter.open}
+        pageNumber={practiceCounter.page}
+        onConfirm={() => handlePracticeConfirm(practiceCounter.page)}
+        onCancel={() => setPracticeCounter({ open: false, page: 0 })}
+      />
     </div>
   );
 }

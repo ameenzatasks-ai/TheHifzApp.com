@@ -612,7 +612,12 @@ export default function StudentDetail() {
         {viewMode === 'nazira' && (
           <div className="px-4 py-4 pb-layout scroll-container">
             {/* Overview section */}
-            <GroupedPages grouped={grouped} totalTracked={totalTracked} />
+            <GroupedPages
+              grouped={grouped}
+              totalTracked={totalTracked}
+              studentId={sId}
+              onPageUpdate={load}
+            />
 
             {/* See previous logs */}
             <button
