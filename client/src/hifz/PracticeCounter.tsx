@@ -8,8 +8,9 @@
  * 4. User adds tallies up to 18
  * 5. Once 18 reached → automatically confirms and closes
  */
-import { useState } from 'react';
-import { X, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Check, Headphones } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -20,9 +21,18 @@ interface Props {
 }
 
 export default function PracticeCounter({ open, pageNumber, onConfirm, onCancel }: Props) {
+  const navigate = useNavigate();
   const [count, setCount] = useState(0);
   const [showTally, setShowTally] = useState(false);
   const TARGET = 18;
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setCount(0);
+      setShowTally(false);
+    }
+  }, [open]);
 
   if (!open) return null;
 
@@ -126,6 +136,20 @@ export default function PracticeCounter({ open, pageNumber, onConfirm, onCancel 
                   No, count for me
                 </button>
               </div>
+
+              {/* Listen button */}
+              <button
+                onClick={() => navigate(`/listen?page=${pageNumber}`)}
+                className="py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                style={{
+                  backgroundColor: 'var(--c-bg-subtle)',
+                  color: 'var(--c-text-muted)',
+                  border: '1px solid var(--c-border)',
+                }}
+              >
+                <Headphones className="w-4 h-4" />
+                Listen to this page
+              </button>
             </div>
           ) : (
             // Tally counter
