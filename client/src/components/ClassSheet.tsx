@@ -53,10 +53,17 @@ export default function ClassSheet({ open, onClose, isUstadh, onSuccess }: Props
         toast.success('Class created');
       } else {
         const upperValue = value.toUpperCase();
-        // Check if it's an ustadh code (starts with USTADH-) or student join code
         const isUstadhCode = upperValue.startsWith('USTADH-');
 
-        const joined = isUstadhCode && isUstadh
+        // Security: ustadhs can ONLY join with ustadh codes, students can ONLY join with student codes
+        if (isUstadh && !isUstadhCode) {
+          throw new Error('Ustadhs must use an ustadh code to join a class');
+        }
+        if (!isUstadh && isUstadhCode) {
+          throw new Error('This is an ustadh-only code');
+        }
+
+        const joined = isUstadhCode
           ? await classesApi.joinAsUstadh(upperValue)
           : await classesApi.join(upperValue);
 

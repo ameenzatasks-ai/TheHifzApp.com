@@ -626,7 +626,7 @@ export default function StudentDetail() {
             >
               <div>
                 <p className="font-semibold text-sm" style={{ color: 'var(--c-text)' }}>
-                  See previous Nazira statuses
+                  See previous Nazira Status
                 </p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--c-text-muted)' }}>
                   View saved weekly snapshots

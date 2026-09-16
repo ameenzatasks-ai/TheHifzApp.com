@@ -74,9 +74,9 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
     textSoft:  'rgba(58,21,0,0.75)',
     icon: Pencil,
   },
-  // ── Test 2 completed — neon green ──────────────────────────────────────
+  // ── Test 2 Completed — neon green ────────────────────────────────────────
   GREEN: {
-    label: 'Test 2 completed',
+    label: 'Test 2 Completed',
     description: 'Second test passed — I can start memorising this page',
     fill:      '#00E64A',
     accent:    '#00942F',
