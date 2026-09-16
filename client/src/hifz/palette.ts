@@ -54,7 +54,7 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
   // ── Test 1 Passed — neon blue ───────────────────────────────────────────
   RED: {
     label: 'Test 1 Passed',
-    description: 'I am now practising it 18 times, with tests in between, before taking my final test with the Ustaz.',
+    description: 'I am now practising it 18 times, with tests in between, before taking my final test with the Ustadh.',
     fill:      '#00E1FF',
     accent:    '#0090A8',
     iconBg:    '#8AF0FF',
@@ -66,7 +66,7 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
   // ── Ready for Final Test — neon orange ────────────────────────────────
   AMBER: {
     label: 'Ready for Final Test',
-    description: 'I have completed the practice and am now waiting for the Ustaz to test me.',
+    description: 'I have completed the practice and am now waiting for the Ustadh to test me.',
     fill:      '#FF6600',
     accent:    '#CC4400',
     iconBg:    '#FF9955',
@@ -78,7 +78,7 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
   // ── Ready to Memorize — neon green ────────────────────────────────────
   GREEN: {
     label: 'Ready to Memorize',
-    description: 'The Ustaz has tested me for a final time, and I can memorise this page when I am ready.',
+    description: 'The Ustadh has tested me for a final time, and I can memorise this page when I am ready.',
     fill:      '#00E64A',
     accent:    '#00942F',
     iconBg:    '#86F5AC',
