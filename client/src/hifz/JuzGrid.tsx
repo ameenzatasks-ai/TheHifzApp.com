@@ -21,6 +21,7 @@ import type { PageStatus } from '../../../shared/juz-map';
 import { juzForPage, JUZ_MAP, type MemorisationOrder } from '../../../shared/juz-map';
 import { PALETTE } from './palette';
 import PageEditor from './PageEditor';
+import PracticeCounter from './PracticeCounter';
 import Spinner from '../components/Spinner';
 
 const TOTAL_PAGES = 604;
@@ -71,15 +72,22 @@ const JUZ_ARABIC: Record<number, string> = {
 };
 
 /** Solid-color page tile. Untouched = white card with just the number. */
-function PageTile({ page, onTap, highlighted }: { page: JuzGridPage; onTap: () => void; highlighted?: boolean }) {
+function PageTile({ page, onTap, highlighted, onPracticeCounterOpen }: { page: JuzGridPage; onTap: () => void; onPracticeCounterOpen?: (pageNum: number) => void; highlighted?: boolean }) {
   const status = page.status;
   const untouched = status === null;
   const entry = status ? PALETTE[status] : null;
+  const isAMBER = status === 'AMBER';
 
   return (
     <button
       id={`page-${page.pageNumber}`}
-      onClick={onTap}
+      onClick={() => {
+        if (isAMBER && onPracticeCounterOpen) {
+          onPracticeCounterOpen(page.pageNumber);
+        } else {
+          onTap();
+        }
+      }}
       className="aspect-square rounded-xl text-base font-bold transition-all active:scale-90 flex items-center justify-center"
       style={{
         background: entry ? entry.fill : 'var(--c-bg-card)',
@@ -121,6 +129,7 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
   const [pages, setPages] = useState<JuzGridPage[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [editorPage, setEditorPage] = useState<JuzGridPage | null>(null);
+  const [practiceCounter, setPracticeCounter] = useState<{ open: boolean; page: number }>({ open: false, page: 0 });
 
   /**
    * The direction this student memorises in, which decides the order the whole
@@ -506,6 +515,7 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
                         page={page}
                         highlighted={highlighted === n}
                         onTap={() => !readOnly && setEditorPage(page)}
+                        onPracticeCounterOpen={(pageNum) => !readOnly && setPracticeCounter({ open: true, page: pageNum })}
                       />
                     );
                   })}
@@ -536,6 +546,18 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
           onClose={() => setEditorPage(null)}
         />
       )}
+
+      {/* ── Practice counter modal ────────────────────────── */}
+      <PracticeCounter
+        open={practiceCounter.open}
+        pageNumber={practiceCounter.page}
+        onConfirm={async () => {
+          await handleSetStatus('GREEN');
+          setPracticeCounter({ open: false, page: 0 });
+          burst();
+        }}
+        onCancel={() => setPracticeCounter({ open: false, page: 0 })}
+      />
     </div>
   );
 }
