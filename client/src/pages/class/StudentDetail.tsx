@@ -490,18 +490,14 @@ export default function StudentDetail() {
   const load = useCallback(async () => {
     try {
       // Load student info + all current pages + all students in class
-      const [pagesRes, infoRes, classRes] = await Promise.all([
+      const [pagesRes, infoRes, students] = await Promise.all([
         hifzApi.studentAllPages(sId),
         classesApi.getStudentPages(cId, sId),
-        classesApi.get(cId),
+        classesApi.getStudents(cId),
       ]);
       setPages(pagesRes.pages);
       setStudent(infoRes.student as StudentInfo);
-
-      // Extract students from class detail
-      if (classRes.students) {
-        setAllStudents(classRes.students);
-      }
+      setAllStudents(students);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to load student');
       navigate(-1);

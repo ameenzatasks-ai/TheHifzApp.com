@@ -34,6 +34,9 @@ export const classesApi = {
   leave:  (id: number) => api.delete<{ message: string }>(`/classes/${id}/leave`),
   getStudentPages: (classId: number, studentId: number) =>
     api.get<StudentPagesResponse>(`/classes/${classId}/students/${studentId}/pages`),
+  /** Ustadh-only: get all students in a class. */
+  getStudents: (classId: number) =>
+    api.get<Array<{ id: number; name: string; email: string; avatar_url: string | null; joined_at: string }>>(`/classes/${classId}/students`),
   /** Ustadh: join a class as co-teacher using ustadh code. */
   joinAsUstadh: (ustadhCode: string) => api.post<ClassWithMeta>('/classes/join-ustadh', { ustadhCode }),
   /** Get co-ustadhs for a class. */
