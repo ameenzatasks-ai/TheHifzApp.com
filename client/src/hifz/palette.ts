@@ -1,12 +1,13 @@
 /**
  * Hifz 6-colour palette — bright, saturated, neon-leaning fills.
  *
- *   BLACK  — Listened          (neon yellow)
- *   RED    — Test 1 completed  (neon blue)
- *   AMBER  — Practiced         (neon orange)
- *   GREEN  — Test 2 completed  (neon green)
- *   GOLD   — Memorised         (gold)
- *   YELLOW — Re-test needed    (grey)
+ * Status progression:
+ *   BLACK  — Ready for Test 1    (neon red)
+ *   RED    — Test 1 Passed       (neon blue)
+ *   AMBER  — Ready for Final Test (neon orange)
+ *   GREEN  — Ready to Memorize   (neon green)
+ *   GOLD   — Memorized           (gold)
+ *   YELLOW — Retest Needed       (neutral gray)
  *
  * The keys are the original status codes and stay as they are: they are
  * written to the database and to every historic row, so renaming them would
@@ -38,10 +39,10 @@ export interface PaletteEntry {
 }
 
 export const PALETTE: Record<PageStatus, PaletteEntry> = {
-  // ── Listened — neon red ───────────────────────────────────────────────
+  // ── Ready for Test 1 — neon red ───────────────────────────────────────
   BLACK: {
-    label: 'Listened',
-    description: "I've listened to this page at least once",
+    label: 'Ready for Test 1',
+    description: 'I have listened to this page once and checked the Tajweed rules.',
     fill:      '#FF2D2D',
     accent:    '#B01E1E',
     iconBg:    '#FF7070',
@@ -50,10 +51,10 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
     textSoft:  'rgba(74,0,0,0.72)',
     icon: Headphones,
   },
-  // ── Practiced — neon blue (swapped) ───────────────────────────────────────
+  // ── Test 1 Passed — neon blue ───────────────────────────────────────────
   RED: {
-    label: 'Practiced',
-    description: "I've practiced it 18 times since my 1st test, and read to a senior as many times as instructed",
+    label: 'Test 1 Passed',
+    description: 'I am now practising it 18 times, with tests in between, before taking my final test with the Ustaz.',
     fill:      '#00E1FF',
     accent:    '#0090A8',
     iconBg:    '#8AF0FF',
@@ -62,10 +63,10 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
     textSoft:  'rgba(0,42,51,0.72)',
     icon: BookOpen,
   },
-  // ── In Practice — neon orange (swapped) ────────────────────────────────────────────
+  // ── Ready for Final Test — neon orange ────────────────────────────────
   AMBER: {
-    label: 'In Practice',
-    description: "I've recited this page to the ustadh for the first test",
+    label: 'Ready for Final Test',
+    description: 'I have completed the practice and am now waiting for the Ustaz to test me.',
     fill:      '#FF6600',
     accent:    '#CC4400',
     iconBg:    '#FF9955',
@@ -74,10 +75,10 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
     textSoft:  'rgba(58,21,0,0.75)',
     icon: Pencil,
   },
-  // ── Test 2 Completed — neon green ────────────────────────────────────────
+  // ── Ready to Memorize — neon green ────────────────────────────────────
   GREEN: {
-    label: 'Test 2 Completed',
-    description: 'Second test passed — I can start memorising this page',
+    label: 'Ready to Memorize',
+    description: 'The Ustaz has tested me for a final time, and I can memorise this page when I am ready.',
     fill:      '#00E64A',
     accent:    '#00942F',
     iconBg:    '#86F5AC',
@@ -86,10 +87,10 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
     textSoft:  'rgba(0,46,16,0.72)',
     icon: CheckCircle2,
   },
-  // ── Memorised — gold ───────────────────────────────────────────────────
+  // ── Memorized — gold ───────────────────────────────────────────────────
   GOLD: {
-    label: 'Memorised',
-    description: 'Memorised in Sabaq',
+    label: 'Memorized',
+    description: 'Memorized in Sabaq',
     fill:      '#FFC72E',
     accent:    '#A8760B',
     iconBg:    '#FFE39B',
@@ -98,16 +99,16 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
     textSoft:  'rgba(46,33,0,0.75)',
     icon: Star,
   },
-  // ── Re-test needed — grey ──────────────────────────────────────────────
+  // ── Retest Needed — neutral gray ───────────────────────────────────────
   YELLOW: {
-    label: 'Re-test needed',
-    description: 'Ten days have passed since Test 2 — needs re-testing',
-    fill:      '#BFC4CB',
-    accent:    '#6F7883',
-    iconBg:    '#E1E5EA',
-    iconColor: '#3A414B',
-    text:      '#23272D',
-    textSoft:  'rgba(35,39,45,0.75)',
+    label: 'Retest Needed',
+    description: 'Ten days have passed since the final test — needs re-testing',
+    fill:      '#9CA3AF',
+    accent:    '#6B7280',
+    iconBg:    '#D1D5DB',
+    iconColor: '#374151',
+    text:      '#1F2937',
+    textSoft:  'rgba(31,41,55,0.75)',
     icon: RotateCw,
   },
 };
