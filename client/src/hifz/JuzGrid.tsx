@@ -72,22 +72,15 @@ const JUZ_ARABIC: Record<number, string> = {
 };
 
 /** Solid-color page tile. Untouched = white card with just the number. */
-function PageTile({ page, onTap, highlighted, onPracticeCounterOpen }: { page: JuzGridPage; onTap: () => void; onPracticeCounterOpen?: (pageNum: number) => void; highlighted?: boolean }) {
+function PageTile({ page, onTap, highlighted }: { page: JuzGridPage; onTap: () => void; highlighted?: boolean }) {
   const status = page.status;
   const untouched = status === null;
   const entry = status ? PALETTE[status] : null;
-  const isAMBER = status === 'AMBER';
 
   return (
     <button
       id={`page-${page.pageNumber}`}
-      onClick={() => {
-        if (isAMBER && onPracticeCounterOpen) {
-          onPracticeCounterOpen(page.pageNumber);
-        } else {
-          onTap();
-        }
-      }}
+      onClick={onTap}
       className="aspect-square rounded-xl text-base font-bold transition-all active:scale-90 flex items-center justify-center"
       style={{
         background: entry ? entry.fill : 'var(--c-bg-card)',
@@ -515,7 +508,6 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
                         page={page}
                         highlighted={highlighted === n}
                         onTap={() => !readOnly && setEditorPage(page)}
-                        onPracticeCounterOpen={(pageNum) => !readOnly && setPracticeCounter({ open: true, page: pageNum })}
                       />
                     );
                   })}
@@ -535,9 +527,15 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
           pageNumber={editorPage.pageNumber}
           currentStatus={editorPage.status}
           onSelect={async (s) => {
-            await handleSetStatus(s);
-            setEditorPage(null);
-            if (s === 'GOLD') burst();
+            if (s === 'AMBER') {
+              // Show practice counter for In Practice selection
+              setEditorPage(null);
+              setPracticeCounter({ open: true, page: editorPage.pageNumber });
+            } else {
+              await handleSetStatus(s);
+              setEditorPage(null);
+              if (s === 'GOLD') burst();
+            }
           }}
           onUntouch={async () => {
             await handleUntouch();
