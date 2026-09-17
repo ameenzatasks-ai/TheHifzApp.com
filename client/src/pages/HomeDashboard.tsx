@@ -8,14 +8,14 @@
  */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, BookOpen, Grid3x3, Star, Users, Clock, ChevronRight } from 'lucide-react';
+import { Flame, BookOpen, Grid3x3, Star, Users, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { classesApi } from '../api/classes';
 import type { ClassWithMeta } from '../types';
 import Spinner from '../components/Spinner';
 import ClassSheet from '../components/ClassSheet';
 
-/* ── Stat card ────────────────────────────────────── */
+/* -- Stat card ────────────────────────────────────────────── */
 function StatCard({ icon, color, value, unit, label }: {
   icon: React.ReactNode;
   color: string;
@@ -44,7 +44,7 @@ function StatCard({ icon, color, value, unit, label }: {
   );
 }
 
-/* ── Task mini-card (student home) ────────────────── */
+/* -- Task mini-card (student home) ────────────────────────── */
 function TaskMini({ englishTitle, meta, accent, bgColor, icon, status }: {
   englishTitle: string;
   meta: string;
@@ -74,14 +74,14 @@ function TaskMini({ englishTitle, meta, accent, bgColor, icon, status }: {
             color: status === 'done' ? '#00D4A0' : '#FFD400',
           }}
         >
-          {status === 'done' ? '✓ Done' : '⏳ Pending'}
+          {status === 'done' ? 'Check Done' : 'Pending'}
         </span>
       </div>
     </div>
   );
 }
 
-/* ── Class row ────────────────────────────────────── */
+/* -- Class row ──────────────────────────────────────────────── */
 function ClassRow({ cls, onClick }: { cls: ClassWithMeta; onClick: () => void }) {
   return (
     <button
@@ -98,7 +98,7 @@ function ClassRow({ cls, onClick }: { cls: ClassWithMeta; onClick: () => void })
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate" style={{ color: 'var(--c-text)' }}>{cls.name}</div>
         <div className="text-[11px] mt-0.5" style={{ color: 'var(--c-text-muted)' }}>
-          {/* A just-created class has no count yet — fall back to 0. */}
+          {/* A just-created class has no count yet - fall back to 0. */}
           {cls.student_count ?? 0} student{(cls.student_count ?? 0) !== 1 ? 's' : ''}
         </div>
       </div>
@@ -112,11 +112,11 @@ function ClassRow({ cls, onClick }: { cls: ClassWithMeta; onClick: () => void })
   );
 }
 
-/* ── Section heading ──────────────────────────────── */
+/* -- Section heading ────────────────────────────────────────── */
 /**
  * The action is a filled pill rather than small text so it reads as a button
  * and clears the ~44px minimum touch target. `flex-shrink-0` keeps it at full
- * size on narrow phones — the rule divider absorbs the remaining width, so the
+ * size on narrow phones - the rule divider absorbs the remaining width, so the
  * title and the button can never collide.
  */
 function SectionHead({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
@@ -137,7 +137,7 @@ function SectionHead({ title, action, onAction }: { title: string; action?: stri
   );
 }
 
-/* ── Main component ───────────────────────────────── */
+/* -- Main component ────────────────────────────────────────── */
 export default function HomeDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -155,7 +155,7 @@ export default function HomeDashboard() {
   }, []);
 
   const firstName = user?.name?.split(' ')[0] || '';
-  const greeting = `As-salāmu ʿalaikum, ${firstName}`;
+  const greeting = `As-salaamu alaikum, ${firstName}`;
 
   if (loading) {
     return (
@@ -173,16 +173,16 @@ export default function HomeDashboard() {
       </div>
 
       <div className="px-4 space-y-6">
-        {/* ── Student view ─────────────────────────── */}
+        {/* -- Student view ────────────────────────────────────────── */}
         {!isUstadh && (
           <>
             {/* Stats */}
             <div>
               <SectionHead title="Your progress" />
               <div className="grid grid-cols-3 gap-2">
-                <StatCard icon={<Flame className="w-[18px] h-[18px]" />} color="#E06A12" value="—" label="Streak" />
-                <StatCard icon={<BookOpen className="w-[18px] h-[18px]" />} color="#0E9C78" value="—" unit="pp" label="Memorised" />
-                <StatCard icon={<Grid3x3 className="w-[18px] h-[18px]" />} color="#B8862A" value="—" label="Juz done" />
+                <StatCard icon={<Flame className="w-[18px] h-[18px]" />} color="#E06A12" value="-" label="Streak" />
+                <StatCard icon={<BookOpen className="w-[18px] h-[18px]" />} color="#0E9C78" value="-" unit="pp" label="Memorised" />
+                <StatCard icon={<Grid3x3 className="w-[18px] h-[18px]" />} color="#B8862A" value="-" label="Juz done" />
               </div>
             </div>
 
@@ -191,7 +191,7 @@ export default function HomeDashboard() {
               <SectionHead title="Today's tasks" action="Log now" onAction={() => navigate('/hifz')} />
               <div className="space-y-2">
                 <TaskMini
-                  englishTitle="Dawr — Revision"
+                  englishTitle="Dawr - Revision"
                   meta="Tap to log today's Dawr"
                   accent="#FF7A1A"
                   bgColor="#9B4800"
@@ -199,7 +199,7 @@ export default function HomeDashboard() {
                   status="pending"
                 />
                 <TaskMini
-                  englishTitle="Sabaq — New Memorisation"
+                  englishTitle="Sabaq - New Memorisation"
                   meta="Tap to log today's Sabaq"
                   accent="#FFD700"
                   bgColor="#7A5A00"
@@ -207,7 +207,7 @@ export default function HomeDashboard() {
                   status="pending"
                 />
                 <TaskMini
-                  englishTitle="Sabaq Para — Recent Review"
+                  englishTitle="Sabaq Para - Recent Review"
                   meta="Tap to log today's Sabaq Para"
                   accent="#00D4A0"
                   bgColor="#0F6650"
@@ -237,7 +237,7 @@ export default function HomeDashboard() {
           </>
         )}
 
-        {/* ── Ustadh view ──────────────────────────── */}
+        {/* -- Ustadh view ────────────────────────────────────────── */}
         {isUstadh && (
           <>
             {/* Class overview stats */}
@@ -250,13 +250,13 @@ export default function HomeDashboard() {
 
             {/* Classes */}
             <div>
-              <SectionHead title=”Your classes” action=”Create or join a class” onAction={() => setSheetOpen(true)} />
+              <SectionHead title="Your classes" action="Create or join a class" onAction={() => setSheetOpen(true)} />
               {classes.length === 0 ? (
-                /* The header already carries the “Create or join a class” button, so
-                   the empty state only explains — it does not repeat it. */
-                <div className=”text-center py-8”>
-                  <p className=”text-sm” style={{ color: 'var(--c-text-muted)' }}>
-                    No classes yet — tap “Create or join a class” to make your first one.
+                /* The header already carries the "Create or join a class" button, so
+                   the empty state only explains - it does not repeat it. */
+                <div className="text-center py-8">
+                  <p className="text-sm" style={{ color: 'var(--c-text-muted)' }}>
+                    No classes yet - tap "Create or join a class" to make your first one.
                   </p>
                 </div>
               ) : (
