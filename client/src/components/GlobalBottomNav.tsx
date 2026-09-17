@@ -1,11 +1,13 @@
 /**
  * GlobalNav — Left sidebar on desktop, bottom bar on mobile.
  *
- *   Student:  Classes → /classes | Nazirah | Hifz | History | Profile
- *   Ustadh:   Home    → /home    | Nazirah | Hifz | History | Profile
+ *   Student:  Classes → /classes | Nazirah | Hifz | History | Settings
+ *   Ustadh:   Home    → /home    | Nazirah | Hifz | History | Settings
+ *
+ * Note: Listen page is accessible via "Listen to this page" button in PageEditor
  */
 import { NavLink } from 'react-router-dom';
-import { Home, Grid3x3, Clock, Settings, Users, Headphones } from 'lucide-react';
+import { Home, Grid3x3, Clock, Settings, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface TabProps {
@@ -40,7 +42,6 @@ export default function GlobalBottomNav() {
       ? { to: '/classes', label: 'Classes', icon: <Users className="w-5 h-5" strokeWidth={2} /> }
       : { to: '/home',    label: 'Home',    icon: <Home  className="w-5 h-5" strokeWidth={2} /> },
     { to: '/nazirah', label: 'Nazirah', icon: <Grid3x3  className="w-5 h-5" strokeWidth={2} /> },
-    { to: '/listen', label: 'Listen', icon: <Headphones className="w-5 h-5" strokeWidth={2} /> },
     { to: '/history', label: 'History', icon: <Clock    className="w-5 h-5" strokeWidth={2} /> },
     { to: '/settings', label: 'Settings', icon: <Settings className="w-5 h-5" strokeWidth={2} /> },
   ];
