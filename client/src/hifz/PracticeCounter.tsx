@@ -8,9 +8,8 @@
  * 4. Progress is saved to localStorage if modal is closed mid-way
  */
 import { useState, useEffect } from 'react';
-import { X, Check, Headphones } from 'lucide-react';
+import { X, Headphones } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 
 interface Props {
   open: boolean;
