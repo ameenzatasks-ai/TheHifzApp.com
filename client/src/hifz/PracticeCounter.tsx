@@ -8,8 +8,7 @@
  * 4. Progress is saved to localStorage if modal is closed mid-way
  */
 import { useState, useEffect } from 'react';
-import { X, Headphones } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
 
 interface Props {
   open: boolean;
@@ -21,7 +20,6 @@ interface Props {
 const STORAGE_KEY = (pageNum: number) => `practice-counter-${pageNum}`;
 
 export default function PracticeCounter({ open, pageNumber, onConfirm, onCancel }: Props) {
-  const navigate = useNavigate();
   const [count, setCount] = useState(0);
   const TARGET = 18;
 
@@ -89,18 +87,19 @@ export default function PracticeCounter({ open, pageNumber, onConfirm, onCancel 
       aria-modal="true"
     >
       <div
-        className="w-full rounded-3xl overflow-hidden animate-fade-in-up"
+        className="w-full rounded-3xl overflow-hidden animate-fade-in-up flex flex-col"
         style={{
           backgroundColor: 'var(--c-bg-card)',
           maxWidth: 420,
           border: '1px solid var(--c-border)',
           boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
+          maxHeight: '80vh',
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div
-          className="px-5 py-4 flex items-center justify-between border-b"
+          className="px-5 py-4 flex items-center justify-between border-b flex-shrink-0"
           style={{ borderColor: 'var(--c-border)' }}
         >
           <div>
@@ -116,7 +115,7 @@ export default function PracticeCounter({ open, pageNumber, onConfirm, onCancel 
           </div>
           <button
             onClick={onCancel}
-            className="p-1.5 rounded-lg transition-all active:scale-90"
+            className="p-1.5 rounded-lg transition-all active:scale-90 flex-shrink-0"
             style={{ color: 'var(--c-text-muted)' }}
             aria-label="Close"
           >
@@ -124,98 +123,84 @@ export default function PracticeCounter({ open, pageNumber, onConfirm, onCancel 
           </button>
         </div>
 
-        {/* Body */}
-        <div className="px-5 py-6">
-          <div className="flex flex-col gap-6">
-            {/* Counter display */}
-            <div className="text-center">
-              <p
-                className="text-6xl font-bold"
-                style={{
-                  color: count === TARGET ? 'var(--c-gold)' : 'var(--c-text)',
-                }}
-              >
-                {count}
-              </p>
-              <p
-                className="text-sm mt-2"
-                style={{ color: 'var(--c-text-muted)' }}
-              >
-                of {TARGET} practices
-              </p>
-            </div>
+        {/* Body — Scrollable content area */}
+        <div className="flex-1 overflow-y-auto px-5 py-6 flex flex-col gap-6">
+          {/* Counter display */}
+          <div className="text-center">
+            <p
+              className="text-6xl font-bold"
+              style={{
+                color: count === TARGET ? 'var(--c-gold)' : 'var(--c-text)',
+              }}
+            >
+              {count}
+            </p>
+            <p
+              className="text-sm mt-2"
+              style={{ color: 'var(--c-text-muted)' }}
+            >
+              of {TARGET} practices
+            </p>
+          </div>
 
-            {/* Progress bar */}
+          {/* Progress bar */}
+          <div
+            className="w-full h-2 rounded-full overflow-hidden"
+            style={{ backgroundColor: 'var(--c-bg-subtle)' }}
+          >
             <div
-              className="w-full h-2 rounded-full overflow-hidden"
-              style={{ backgroundColor: 'var(--c-bg-subtle)' }}
-            >
-              <div
-                className="h-full transition-all duration-300"
-                style={{
-                  width: `${(count / TARGET) * 100}%`,
-                  backgroundColor: 'var(--c-gold)',
-                }}
-              />
-            </div>
-
-            {/* Add tally button */}
-            <button
-              onClick={handleAddTally}
-              disabled={count >= TARGET}
-              className="py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 disabled:opacity-50"
+              className="h-full transition-all duration-300"
               style={{
-                backgroundColor:
-                  count >= TARGET ? 'var(--c-bg-subtle)' : 'var(--c-gold)',
-                color:
-                  count >= TARGET ? 'var(--c-text-muted)' : '#0d0d0d',
+                width: `${(count / TARGET) * 100}%`,
+                backgroundColor: 'var(--c-gold)',
               }}
-            >
-              Add Tally ({count}/{TARGET})
-            </button>
+            />
+          </div>
 
-            {/* Finish button (always visible, enabled once at least 1 tally) */}
+          {/* Add tally button */}
+          <button
+            onClick={handleAddTally}
+            disabled={count >= TARGET}
+            className="py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 disabled:opacity-50"
+            style={{
+              backgroundColor:
+                count >= TARGET ? 'var(--c-bg-subtle)' : 'var(--c-gold)',
+              color:
+                count >= TARGET ? 'var(--c-text-muted)' : '#0d0d0d',
+            }}
+          >
+            Add Tally ({count}/{TARGET})
+          </button>
+
+          {/* Reset button (only if started counting) */}
+          {count > 0 && (
             <button
-              onClick={handleFinish}
-              disabled={count === 0}
-              className="py-3 rounded-2xl font-bold transition-all active:scale-95 disabled:opacity-50"
-              style={{
-                backgroundColor: count > 0 ? 'var(--c-green-dark)' : 'var(--c-bg-subtle)',
-                color: count > 0 ? '#FAF7F0' : 'var(--c-text-muted)',
-              }}
-            >
-              {count > 0 ? 'Finish & Mark as Ready' : 'Add tallies to finish'}
-            </button>
-
-            {/* Reset button (only if started counting) */}
-            {count > 0 && (
-              <button
-                onClick={handleReset}
-                className="py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
-                style={{
-                  backgroundColor: 'var(--c-bg-subtle)',
-                  color: 'var(--c-text-muted)',
-                  border: '1px solid var(--c-border)',
-                }}
-              >
-                Reset
-              </button>
-            )}
-
-            {/* Listen button */}
-            <button
-              onClick={() => navigate(`/listen?page=${pageNumber}`)}
-              className="py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-1.5"
+              onClick={handleReset}
+              className="py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
               style={{
                 backgroundColor: 'var(--c-bg-subtle)',
                 color: 'var(--c-text-muted)',
                 border: '1px solid var(--c-border)',
               }}
             >
-              <Headphones className="w-4 h-4" />
-              Listen to this page
+              Reset
             </button>
-          </div>
+          )}
+        </div>
+
+        {/* Footer — Fixed Finish button */}
+        <div className="px-5 py-4 border-t flex-shrink-0" style={{ borderColor: 'var(--c-border)' }}>
+          <button
+            onClick={handleFinish}
+            disabled={count === 0}
+            className="w-full py-3 rounded-2xl font-bold transition-all active:scale-95 disabled:opacity-50"
+            style={{
+              backgroundColor: count > 0 ? 'var(--c-green-dark)' : 'var(--c-bg-subtle)',
+              color: count > 0 ? '#FAF7F0' : 'var(--c-text-muted)',
+            }}
+          >
+            {count > 0 ? 'Finish & Mark as Ready' : 'Add tallies to finish'}
+          </button>
         </div>
       </div>
     </div>
