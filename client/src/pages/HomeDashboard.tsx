@@ -243,21 +243,20 @@ export default function HomeDashboard() {
             {/* Class overview stats */}
             <div>
               <SectionHead title="Class overview" />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 <StatCard icon={<Users className="w-[18px] h-[18px]" />} color="#0F4C3A" value={String(classes.reduce((s, c) => s + (c.student_count || 0), 0))} label="Students" />
-                <StatCard icon={<Clock className="w-[18px] h-[18px]" />} color="#B8862A" value="—" label="To review" />
               </div>
             </div>
 
             {/* Classes */}
             <div>
-              <SectionHead title="Your classes" action="Create a class" onAction={() => setSheetOpen(true)} />
+              <SectionHead title=”Your classes” action=”Create or join a class” onAction={() => setSheetOpen(true)} />
               {classes.length === 0 ? (
-                /* The header already carries the "Create a class" button, so
+                /* The header already carries the “Create or join a class” button, so
                    the empty state only explains — it does not repeat it. */
-                <div className="text-center py-8">
-                  <p className="text-sm" style={{ color: 'var(--c-text-muted)' }}>
-                    No classes yet — tap “Create a class” to make your first one.
+                <div className=”text-center py-8”>
+                  <p className=”text-sm” style={{ color: 'var(--c-text-muted)' }}>
+                    No classes yet — tap “Create or join a class” to make your first one.
                   </p>
                 </div>
               ) : (
