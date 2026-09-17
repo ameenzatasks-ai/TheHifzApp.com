@@ -9,7 +9,7 @@
  * than left playing in the background.
  */
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Play, Pause, AlertCircle, RotateCw, SkipBack, SkipForward } from 'lucide-react';
+import { ArrowLeft, Play, Pause, AlertCircle, RotateCw, RotateCcw } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { juzForPage } from '../../../shared/juz-map';
 
@@ -254,7 +254,7 @@ export default function ListenPage() {
                       style={{ backgroundColor: 'var(--c-bg-subtle)', color: 'var(--c-text)' }}
                       title="Go back 5 seconds"
                     >
-                      <SkipBack className="w-6 h-6" />
+                      <RotateCcw className="w-6 h-6" />
                     </button>
 
                     <button
@@ -279,7 +279,7 @@ export default function ListenPage() {
                       style={{ backgroundColor: 'var(--c-bg-subtle)', color: 'var(--c-text)' }}
                       title="Skip forward 5 seconds"
                     >
-                      <SkipForward className="w-6 h-6" />
+                      <RotateCw className="w-6 h-6" />
                     </button>
                   </div>
 
