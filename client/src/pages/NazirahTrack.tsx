@@ -43,7 +43,7 @@ export default function NazirahTrack() {
     <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--c-bg)' }}>
       {/* Header */}
       <div
-        className="flex items-center gap-3 px-4 pt-safe pb-3 border-b flex-shrink-0"
+        className="flex items-center gap-3 px-4 pt-safe pb-4 border-b flex-shrink-0"
         style={{ backgroundColor: 'var(--c-bg-nav)', borderColor: 'var(--c-border)' }}
       >
         <button
@@ -56,10 +56,10 @@ export default function NazirahTrack() {
         </button>
 
         <div className="flex-1 min-w-0">
-          <h1 className="font-semibold text-base" style={{ color: 'var(--c-text)' }}>
+          <h1 className="font-semibold text-base leading-tight" style={{ color: 'var(--c-text)' }}>
             Track your Nazirah
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--c-text-muted)' }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] mt-0.5" style={{ color: 'var(--c-text-muted)' }}>
             ناظره
           </p>
         </div>
@@ -77,7 +77,7 @@ export default function NazirahTrack() {
       </div>
 
       {/* JuzGrid — onSaveNazira is undefined once saved, so JuzGrid hides its button */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 pt-4">
         <JuzGrid
           onOpenAudit={() => navigate('/nazirah/audit')}
           onSaveNazira={isStudent && !hasSaved ? () => setSaveOpen(true) : undefined}
