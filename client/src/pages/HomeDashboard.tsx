@@ -1,5 +1,5 @@
 /**
- * HomeDashboard — The unified landing page after login.
+ * HomeDashboard â€" The unified landing page after login.
  *
  * Student view:  progress stats + today's task mini-cards + class list.
  * Ustadh view:   class overview stats + awaiting review list + class average.
@@ -15,7 +15,7 @@ import type { ClassWithMeta } from '../types';
 import Spinner from '../components/Spinner';
 import ClassSheet from '../components/ClassSheet';
 
-/* -- Stat card ────────────────────────────────────────────── */
+/* -- Stat card â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 function StatCard({ icon, color, value, unit, label }: {
   icon: React.ReactNode;
   color: string;
@@ -44,7 +44,7 @@ function StatCard({ icon, color, value, unit, label }: {
   );
 }
 
-/* -- Task mini-card (student home) ────────────────────────── */
+/* -- Task mini-card (student home) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 function TaskMini({ englishTitle, meta, accent, bgColor, icon, status }: {
   englishTitle: string;
   meta: string;
@@ -81,7 +81,7 @@ function TaskMini({ englishTitle, meta, accent, bgColor, icon, status }: {
   );
 }
 
-/* -- Class row ──────────────────────────────────────────────── */
+/* -- Class row â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 function ClassRow({ cls, onClick }: { cls: ClassWithMeta; onClick: () => void }) {
   return (
     <button
@@ -112,7 +112,7 @@ function ClassRow({ cls, onClick }: { cls: ClassWithMeta; onClick: () => void })
   );
 }
 
-/* -- Section heading ────────────────────────────────────────── */
+/* -- Section heading â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 /**
  * The action is a filled pill rather than small text so it reads as a button
  * and clears the ~44px minimum touch target. `flex-shrink-0` keeps it at full
@@ -137,7 +137,7 @@ function SectionHead({ title, action, onAction }: { title: string; action?: stri
   );
 }
 
-/* -- Main component ────────────────────────────────────────── */
+/* -- Main component â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
 export default function HomeDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -173,7 +173,7 @@ export default function HomeDashboard() {
       </div>
 
       <div className="px-4 space-y-6">
-        {/* -- Student view ────────────────────────────────────────── */}
+        {/* -- Student view â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {!isUstadh && (
           <>
             {/* Stats */}
@@ -237,7 +237,7 @@ export default function HomeDashboard() {
           </>
         )}
 
-        {/* -- Ustadh view ────────────────────────────────────────── */}
+        {/* -- Ustadh view â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
         {isUstadh && (
           <>
             {/* Class overview stats */}
