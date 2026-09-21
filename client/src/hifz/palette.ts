@@ -114,7 +114,7 @@ export const PALETTE: Record<PageStatus, PaletteEntry> = {
 };
 
 export const ALL_STATUSES: PageStatus[] = [
-  'BLACK', 'RED', 'AMBER', 'GREEN', 'GOLD', 'YELLOW',
+  'BLACK', 'RED', 'AMBER', 'GREEN', 'YELLOW', 'GOLD',
 ];
 
 export const PROGRESSION: PageStatus[] = ['BLACK', 'RED', 'AMBER', 'GREEN', 'GOLD'];
