@@ -282,21 +282,22 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
     setEditorPage(prev => prev && prev.pageNumber === pageNumber ? { ...prev, status } : prev);
   }
 
-  async function handleSetStatus(status: PageStatus) {
-    if (!editorPage || readOnly) return;
-    const previous = editorPage.status;
-    patchPage(editorPage.pageNumber, status);
+  async function handleSetStatus(status: PageStatus, pageNum?: number) {
+    const page = editorPage || (pageNum ? { pageNumber: pageNum, status: null } : null);
+    if (!page || readOnly) return;
+    const previous = page.status;
+    patchPage(page.pageNumber, status);
     try {
       if (studentId !== undefined) {
-        await hifzApi.setStudentPage(editorPage.pageNumber, studentId, status);
+        await hifzApi.setStudentPage(page.pageNumber, studentId, status);
       } else {
-        await hifzApi.setPage(editorPage.pageNumber, status);
+        await hifzApi.setPage(page.pageNumber, status);
       }
       if (status === 'GOLD') {
-        toast.success(`Page ${editorPage.pageNumber} memorised — Mashallah`);
+        toast.success(`Page ${page.pageNumber} memorised — Mashallah`);
       }
     } catch (err) {
-      patchPage(editorPage.pageNumber, previous);
+      patchPage(page.pageNumber, previous);
       toast.error(err instanceof Error ? err.message : 'Save failed');
     }
   }
@@ -550,7 +551,7 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
         open={practiceCounter.open}
         pageNumber={practiceCounter.page}
         onConfirm={async () => {
-          await handleSetStatus('AMBER');
+          await handleSetStatus('AMBER', practiceCounter.page);
           setPracticeCounter({ open: false, page: 0 });
         }}
         onCancel={() => setPracticeCounter({ open: false, page: 0 })}
