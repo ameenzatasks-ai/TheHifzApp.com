@@ -303,7 +303,7 @@ export default function ListenPage() {
 
                   {/* Speed controls */}
                   <div className="flex flex-wrap gap-2 justify-center">
-                    {[0.75, 1, 1.25, 1.5, 1.75, 2].map(s => (
+                    {[0.5, 0.75, 1, 1.25, 1.5].map(s => (
                       <button
                         key={s}
                         onClick={() => changeSpeed(s)}
