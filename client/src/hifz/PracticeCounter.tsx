@@ -32,10 +32,15 @@ export default function PracticeCounter({ open, pageNumber, onConfirm, onCancel 
           const num = parseInt(saved, 10);
           if (num >= 0 && num <= TARGET) {
             setCount(num);
+          } else {
+            setCount(0);
           }
+        } else {
+          setCount(0);
         }
       } catch {
         // Ignore localStorage errors
+        setCount(0);
       }
     }
   }, [open, pageNumber]);
