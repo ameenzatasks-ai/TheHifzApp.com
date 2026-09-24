@@ -530,6 +530,7 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
           pageNumber={editorPage.pageNumber}
           currentStatus={editorPage.status}
           userRole={user?.role as 'student' | 'ustadh' | undefined}
+          isViewingStudent={studentId !== undefined}
           onSelect={async (s) => {
             if (s === 'AMBER') {
               // Show practice counter for In Practice selection

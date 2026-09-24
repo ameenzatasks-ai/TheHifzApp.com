@@ -24,6 +24,7 @@ interface Props {
   onUntouch: () => void | Promise<void>;
   onClose: () => void;
   userRole?: 'student' | 'ustadh';
+  isViewingStudent?: boolean;
 }
 
 function StatusCard({
@@ -93,7 +94,7 @@ function StatusCard({
 }
 
 export default function PageEditor({
-  open, pageNumber, currentStatus, onSelect, onUntouch, onClose, userRole,
+  open, pageNumber, currentStatus, onSelect, onUntouch, onClose, userRole, isViewingStudent,
 }: Props) {
   const navigate = useNavigate();
 
@@ -164,7 +165,10 @@ export default function PageEditor({
                 status={s}
                 isCurrent={currentStatus === s}
                 onClick={() => onSelect(s)}
-                disabled={s === 'RED' && userRole !== 'ustadh'}
+                disabled={
+                  (s === 'RED' && userRole !== 'ustadh') ||
+                  (isViewingStudent && userRole === 'ustadh' && s !== 'RED')
+                }
               />
               {s === 'BLACK' && (
                 <button
