@@ -71,7 +71,7 @@ export default function ClassesList() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="min-h-screen scroll-container pb-layout pt-safe" style={{ backgroundColor: 'var(--c-bg)' }}>
+    <div className="min-h-screen pb-layout pt-safe" style={{ backgroundColor: 'var(--c-bg)' }}>
       <div className="p-5 max-w-md mx-auto">
         {/* Greeting */}
         <h1 className="text-xl font-bold" style={{ color: 'var(--c-text)' }}>

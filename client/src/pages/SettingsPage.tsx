@@ -113,7 +113,7 @@ export default function SettingsPage() {
   const initial = user.name[0]?.toUpperCase();
 
   return (
-    <div className="min-h-screen scroll-container pb-layout pt-safe" style={{ backgroundColor: 'var(--c-bg)' }}>
+    <div className="min-h-screen pb-layout pt-safe" style={{ backgroundColor: 'var(--c-bg)' }}>
       <div className="p-5 max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

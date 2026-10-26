@@ -117,7 +117,6 @@ html[data-theme="dark"] {
 /* Scrollable containers */
 .scroll-container {
   overflow-y: auto;
-  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
