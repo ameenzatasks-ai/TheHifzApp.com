@@ -44,4 +44,7 @@ export const classesApi = {
   /** Remove a co-ustadh from a class. */
   removeCoUstadh: (classId: number, ustadhId: number) =>
     api.delete<{ message: string }>(`/classes/${classId}/co-ustadhs/${ustadhId}`),
+  /** Ustadh-only: permanently delete a student's account and all their data. */
+  deleteStudentAccount: (classId: number, studentId: number) =>
+    api.delete<{ message: string }>(`/classes/${classId}/students/${studentId}/account`),
 };

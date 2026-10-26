@@ -385,4 +385,38 @@ router.delete('/:id/co-ustadhs/:ustadhId', authenticate, requireRole('ustadh'), 
   res.json({ message: 'Co-ustadh access revoked' });
 });
 
+// Children first: every table that points at users(id) is cleared before the user row.
+const deleteStudentAccount = db.transaction(async (studentId: number) => {
+  await db.prepare('UPDATE hifz_dawr_log SET scored_by = NULL WHERE scored_by = ?').run(studentId);
+  await db.prepare('UPDATE hifz_task_scores SET scored_by = NULL WHERE scored_by = ?').run(studentId);
+  await db.prepare('DELETE FROM hifz_dawr_log WHERE student_id = ?').run(studentId);
+  await db.prepare('DELETE FROM hifz_task_scores WHERE student_id = ?').run(studentId);
+  await db.prepare('DELETE FROM hifz_daily_tasks WHERE student_id = ?').run(studentId);
+  await db.prepare('DELETE FROM nazirah_log_pages WHERE log_id IN (SELECT id FROM nazirah_logs WHERE student_id = ?)').run(studentId);
+  await db.prepare('DELETE FROM nazirah_logs WHERE student_id = ?').run(studentId);
+  await db.prepare('DELETE FROM status_history WHERE student_id = ? OR changed_by = ?').run(studentId, studentId);
+  await db.prepare('DELETE FROM student_page_status WHERE student_id = ? OR set_by_user_id = ?').run(studentId, studentId);
+  await db.prepare('DELETE FROM page_reads WHERE student_id = ?').run(studentId);
+  await db.prepare('DELETE FROM class_invitations WHERE created_by = ?').run(studentId);
+  await db.prepare('DELETE FROM enrolments WHERE student_id = ?').run(studentId);
+  await db.prepare('DELETE FROM users WHERE id = ?').run(studentId);
+});
+
+// DELETE /api/classes/:id/students/:studentId/account — Ustadh permanently deletes a student's account
+router.delete('/:id/students/:studentId/account', authenticate, requireRole('ustadh'), async (req: AuthRequest, res: Response): Promise<void> => {
+  const classId = parseInt(req.params.id, 10);
+  const studentId = parseInt(req.params.studentId, 10);
+
+  const authorized = await isAuthorizedUstadh(classId, req.user!.id);
+  if (!authorized) { res.status(404).json({ error: 'Class not found' }); return; }
+
+  const student = await db
+    .prepare("SELECT u.id FROM users u JOIN enrolments e ON e.student_id = u.id WHERE u.id = ? AND u.role = 'student' AND e.class_id = ?")
+    .get(studentId, classId);
+  if (!student) { res.status(404).json({ error: 'Student not found in this class' }); return; }
+
+  await deleteStudentAccount(studentId);
+  res.json({ message: 'Student account deleted' });
+});
+
 export default router;

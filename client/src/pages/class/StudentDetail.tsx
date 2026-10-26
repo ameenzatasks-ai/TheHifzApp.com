@@ -8,7 +8,7 @@
  */
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, Star, BookOpen, RotateCcw, TableProperties } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Star, BookOpen, RotateCcw, TableProperties, Settings, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { hifzApi, type StatusPage } from '../../api/hifz';
 import { classesApi } from '../../api/classes';
@@ -17,6 +17,7 @@ import type { PageStatus } from '../../../../shared/juz-map';
 import GroupedPages from '../../hifz/GroupedPages';
 import JuzGrid from '../../hifz/JuzGrid';
 import Spinner from '../../components/Spinner';
+import ConfirmModal from '../../components/ConfirmModal';
 
 /* ── Score colours (1–7) — used for visual feedback on inputs ── */
 const SCORE_COLOURS: Record<number, string> = {
@@ -486,6 +487,9 @@ export default function StudentDetail() {
   const [allStudents, setAllStudents] = useState<StudentInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('nazira');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -510,6 +514,19 @@ export default function StudentDetail() {
 
   function switchStudent(newStudentId: number) {
     navigate(`/classes/${cId}/student/${newStudentId}`);
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try {
+      await classesApi.deleteStudentAccount(cId, sId);
+      toast.success(`${student?.name ?? 'Student'}'s account has been deleted`);
+      navigate(`/classes/${cId}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Delete failed');
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
   }
 
   const grouped = groupPages(pages);
@@ -542,6 +559,35 @@ export default function StudentDetail() {
           <h1 className="font-semibold text-base" style={{ color: 'var(--c-text)' }}>
             {viewMode === 'hifz' ? 'Hifz tracking' : 'Nazirah tracking'}
           </h1>
+        </div>
+
+        <div className="relative flex-shrink-0">
+          <button
+            onClick={() => setSettingsOpen(o => !o)}
+            className="p-1.5 rounded-lg transition-all active:scale-90"
+            style={{ color: 'var(--c-text-muted)' }}
+            aria-label="Student settings"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+          {settingsOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setSettingsOpen(false)} />
+              <div
+                className="absolute right-0 top-full mt-2 z-50 rounded-xl overflow-hidden shadow-lg"
+                style={{ backgroundColor: 'var(--c-bg-card)', border: '1px solid var(--c-border)', minWidth: 180 }}
+              >
+                <button
+                  onClick={() => { setSettingsOpen(false); setDeleteOpen(true); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-left"
+                  style={{ color: 'var(--c-red)' }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete account
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -648,6 +694,17 @@ export default function StudentDetail() {
           <ScoresTab classId={cId} studentId={sId} studentName={student.name} />
         )}
       </div>
+
+      <ConfirmModal
+        open={deleteOpen}
+        title={`Delete ${student?.name ?? 'this student'}'s account?`}
+        message="This permanently deletes the student's login, all their Nazirah and Hifz progress, logs and scores. They will also be removed from every class they're in. This cannot be undone."
+        confirmLabel="Delete everything"
+        destructive
+        busy={deleting}
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setDeleteOpen(false)}
+      />
     </div>
   );
 }
