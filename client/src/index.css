@@ -44,18 +44,15 @@ html[data-theme="dark"] {
 
 @layer base {
   html, body {
-    height: 100%;
     overscroll-behavior: none;
   }
 
-  /* #root is the scroll container for all protected pages.
-     overflow-y: auto lets mouse-wheel events scroll the content.
-     Pages that opt out (WelcomeScreen, SplashScreen) use
-     `fixed inset-0` so they bypass this container entirely. */
+  /* The page itself scrolls, rather than a nested container. Phone browsers
+     handle page scrolling most reliably. Screens that need their own scrolling
+     use .h-screen-fit and an inner scroll area. */
   #root {
-    height: 100%;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   body {
