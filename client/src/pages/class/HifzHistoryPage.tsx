@@ -451,7 +451,7 @@ export default function HifzHistoryPage() {
   const dates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
 
   return (
-    <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--c-bg)' }}>
+    <div className="h-screen-fit flex flex-col" style={{ backgroundColor: 'var(--c-bg)' }}>
 
       {/* ── Header ────────────────────────────────────────────── */}
       <div

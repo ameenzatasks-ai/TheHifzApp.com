@@ -541,7 +541,7 @@ export default function StudentDetail() {
   }
 
   return (
-    <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--c-bg)' }}>
+    <div className="h-screen-fit flex flex-col" style={{ backgroundColor: 'var(--c-bg)' }}>
       {/* ── Header ──────────────────────────────────────────── */}
       <div
         className="flex items-center gap-3 px-4 pt-safe pb-3 border-b flex-shrink-0"

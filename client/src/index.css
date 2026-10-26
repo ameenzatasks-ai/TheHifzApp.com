@@ -124,6 +124,13 @@ html[data-theme="dark"] {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Full-height screens sized to the visible area. On phones, 100vh is taller than
+   the screen while the browser toolbar shows, which hides the bottom of the page. */
+.h-screen-fit {
+  height: 100vh;
+  height: 100dvh;
+}
+
 /* Arabic text direction */
 [lang="ar"], .arabic {
   direction: rtl;
