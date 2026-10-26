@@ -165,10 +165,7 @@ export default function PageEditor({
                 status={s}
                 isCurrent={currentStatus === s}
                 onClick={() => onSelect(s)}
-                disabled={
-                  (s === 'RED' && userRole !== 'ustadh') ||
-                  (isViewingStudent && userRole === 'ustadh' && s !== 'RED')
-                }
+                disabled={isViewingStudent && userRole === 'ustadh' && s !== 'RED'}
               />
               {s === 'BLACK' && (
                 <button
