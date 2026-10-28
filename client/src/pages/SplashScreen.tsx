@@ -72,8 +72,36 @@ export default function SplashScreen() {
           حفظ
         </p>
 
-        {/* App logo */}
-        <img src="/logo.png" alt="The Hifz App logo" style={{ width: 120, height: 120 }} />
+        {/* Minimal arch silhouette */}
+        <svg
+          viewBox="0 0 100 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ width: 80, height: 96 }}
+          aria-hidden="true"
+        >
+          <path
+            d="M10 120 L10 54 Q10 6 50 2 Q90 6 90 54 L90 120 Z"
+            stroke="#0F4C3A"
+            strokeWidth="2.5"
+            fill="#FAF7F0"
+          />
+          <path
+            d="M18 116 L18 57 Q18 16 50 12 Q82 16 82 57 L82 116 Z"
+            stroke="#B8862A"
+            strokeWidth="1"
+            fill="none"
+            strokeDasharray="3 3"
+          />
+          <polygon points="50,0 54,5 50,10 46,5" fill="#B8862A" />
+          {/* Rahl + Quran */}
+          <line x1="35" y1="96" x2="28" y2="114" stroke="#0F4C3A" strokeWidth="2" strokeLinecap="round" />
+          <line x1="65" y1="96" x2="72" y2="114" stroke="#0F4C3A" strokeWidth="2" strokeLinecap="round" />
+          <line x1="30" y1="108" x2="70" y2="108" stroke="#0F4C3A" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M35 96 L40 78 Q50 74 50 74 L50 96 Z" fill="rgba(184,134,42,0.2)" stroke="#0F4C3A" strokeWidth="1" />
+          <path d="M65 96 L60 78 Q50 74 50 74 L50 96 Z" fill="rgba(184,134,42,0.2)" stroke="#0F4C3A" strokeWidth="1" />
+          <line x1="50" y1="74" x2="50" y2="96" stroke="#0F4C3A" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
 
         {/* Name */}
         <div className="flex flex-col items-center gap-2">
