@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import GlobalBottomNav from './components/GlobalBottomNav';
 import TourModal from './components/TourModal';
 import Spinner from './components/Spinner';
+import UpdatePrompt from './components/UpdatePrompt';
 
 /* ── Lazy-loaded pages ───────────────────────────────────── */
 const SplashScreen     = lazy(() => import('./pages/SplashScreen'));
@@ -200,6 +201,7 @@ export default function App() {
           <AuthProvider>
             <AppRoutes />
             <ThemedToaster />
+            <UpdatePrompt />
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>

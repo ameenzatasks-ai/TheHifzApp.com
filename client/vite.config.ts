@@ -2,12 +2,23 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
+import { readFileSync } from 'fs';
+
+// The version shown in the app comes from client/package.json.
+const { version } = JSON.parse(readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'));
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+  },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // Updates wait for the user to tap Update instead of applying on their own.
+      registerType: 'prompt',
+      // The app registers its service worker itself (see UpdatePrompt), so the
+      // plugin must not inject a second registration.
+      injectRegister: null,
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
         name: 'The Hifz App',
@@ -21,18 +32,15 @@ export default defineConfig({
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: 'pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
-        // Take over as soon as a new build is fetched. Without these a fresh
-        // service worker sits in "waiting" until every tab of the app is
-        // closed, so a deploy keeps serving the previous bundle and a plain
-        // reload appears to do nothing.
-        skipWaiting: true,
+        // skipWaiting stays off: a new build waits until the user taps Update
+        // (see UpdatePrompt). clientsClaim then hands the open page to it at once.
         clientsClaim: true,
         // Drop caches from previous builds instead of leaving them to
         // accumulate and potentially be served.

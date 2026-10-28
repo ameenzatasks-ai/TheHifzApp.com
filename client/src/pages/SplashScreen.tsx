@@ -111,6 +111,12 @@ export default function SplashScreen() {
           >
             The Hifz App
           </p>
+          <p
+            className="text-[11px] tracking-wide"
+            style={{ color: 'rgba(15,76,58,0.55)' }}
+          >
+            Version {__APP_VERSION__}
+          </p>
           <div className="flex items-center gap-2">
             <div style={{ width: 28, height: 1, backgroundColor: '#B8862A', opacity: 0.5 }} />
             <svg width="6" height="6" viewBox="0 0 6 6" aria-hidden="true">

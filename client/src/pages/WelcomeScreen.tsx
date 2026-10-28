@@ -225,7 +225,10 @@ export default function WelcomeScreen() {
             </div>
             <p className="font-amiri leading-none animate-fade-in-up" style={{ color: '#B8862A', fontSize: 72, textShadow: '0 1px 0 rgba(184,134,42,0.15)', marginTop: -4 }} lang="ar">حفظ</p>
             <div className="animate-fade-in-up-delay"><GoldDivider /></div>
-            <h1 className="font-inter font-bold tracking-[0.22em] uppercase text-sm animate-fade-in-up-delay" style={{ color: '#0F4C3A' }}>The Hifz App</h1>
+            <div className="flex flex-col items-center gap-1 animate-fade-in-up-delay">
+              <h1 className="font-inter font-bold tracking-[0.22em] uppercase text-sm" style={{ color: '#0F4C3A' }}>The Hifz App</h1>
+              <p className="text-[11px] tracking-wide" style={{ color: 'rgba(15,76,58,0.45)' }}>Version {__APP_VERSION__}</p>
+            </div>
             <p className="text-sm leading-relaxed animate-fade-in-up-delay2 max-w-xs" style={{ color: 'rgba(15,76,58,0.55)' }}>
               Track your daily Sabaq, Sabaq Para & Dawr — memorise the Qur'an together with your Ustadh.
             </p>
