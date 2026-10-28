@@ -17,29 +17,8 @@ import Spinner from '../components/Spinner';
  */
 type View = 'home' | 'create-choose' | 'signin-choose' | 'create-form' | 'signin-form';
 
-function ArchIllustration() {
-  return (
-    <svg viewBox="0 0 220 260" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" aria-hidden="true">
-      <path d="M30 260 L30 120 Q30 20 110 10 Q190 20 190 120 L190 260 Z" stroke="#0F4C3A" strokeWidth="3" fill="#FAF7F0" />
-      <path d="M44 252 L44 124 Q44 36 110 26 Q176 36 176 124 L176 252 Z" stroke="#B8862A" strokeWidth="1.5" fill="none" strokeDasharray="4 4" />
-      <line x1="80" y1="210" x2="68" y2="240" stroke="#0F4C3A" strokeWidth="3" strokeLinecap="round" />
-      <line x1="140" y1="210" x2="152" y2="240" stroke="#0F4C3A" strokeWidth="3" strokeLinecap="round" />
-      <line x1="70" y1="230" x2="150" y2="230" stroke="#0F4C3A" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M72 210 Q110 202 148 210" stroke="#0F4C3A" strokeWidth="3" fill="none" strokeLinecap="round" />
-      <path d="M72 210 L80 175 Q95 162 110 168 Z" fill="rgba(184,134,42,0.18)" stroke="#0F4C3A" strokeWidth="1.5" />
-      <path d="M148 210 L140 175 Q125 162 110 168 Z" fill="rgba(184,134,42,0.18)" stroke="#0F4C3A" strokeWidth="1.5" />
-      <line x1="110" y1="168" x2="110" y2="210" stroke="#0F4C3A" strokeWidth="2" strokeLinecap="round" />
-      <line x1="84" y1="186" x2="106" y2="183" stroke="#0F4C3A" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
-      <line x1="86" y1="193" x2="107" y2="190" stroke="#0F4C3A" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
-      <line x1="88" y1="200" x2="107" y2="197" stroke="#0F4C3A" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
-      <line x1="114" y1="183" x2="136" y2="186" stroke="#0F4C3A" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
-      <line x1="114" y1="190" x2="135" y2="193" stroke="#0F4C3A" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
-      <line x1="114" y1="197" x2="133" y2="200" stroke="#0F4C3A" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
-      <polygon points="110,2 116,10 110,18 104,10" fill="#B8862A" />
-      <circle cx="30" cy="260" r="4" fill="#B8862A" />
-      <circle cx="190" cy="260" r="4" fill="#B8862A" />
-    </svg>
-  );
+function LogoMark() {
+  return <img src="/logo.png" alt="The Hifz App logo" className="w-full h-full object-contain" />;
 }
 
 function GoldDivider() {
@@ -221,7 +200,7 @@ export default function WelcomeScreen() {
         <>
           <div className="flex-1 flex flex-col items-center justify-center text-center px-8" style={{ gap: 20 }}>
             <div className="animate-fade-in-up" style={{ width: 140, height: 165 }}>
-              <ArchIllustration />
+              <LogoMark />
             </div>
             <p className="font-amiri leading-none animate-fade-in-up" style={{ color: '#B8862A', fontSize: 72, textShadow: '0 1px 0 rgba(184,134,42,0.15)', marginTop: -4 }} lang="ar">حفظ</p>
             <div className="animate-fade-in-up-delay"><GoldDivider /></div>
