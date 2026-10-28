@@ -112,8 +112,8 @@ export default function SplashScreen() {
             The Hifz App
           </p>
           <p
-            className="text-[11px] tracking-wide"
-            style={{ color: 'rgba(15,76,58,0.55)' }}
+            className="text-[13px] font-bold tracking-wide"
+            style={{ color: '#0F4C3A' }}
           >
             Version {__APP_VERSION__}
           </p>

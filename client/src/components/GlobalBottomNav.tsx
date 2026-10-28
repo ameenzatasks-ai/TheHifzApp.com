@@ -82,7 +82,7 @@ export default function GlobalBottomNav() {
           <p className="text-[9px] text-center font-semibold uppercase tracking-wider" style={{ color: 'var(--c-text-faint)' }}>
             The Hifz App
           </p>
-          <p className="text-[9px] text-center mt-1" style={{ color: 'var(--c-text-faint)' }}>
+          <p className="text-[11px] font-bold text-center mt-1" style={{ color: 'var(--c-text-muted)' }}>
             Version {__APP_VERSION__}
           </p>
         </div>

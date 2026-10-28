@@ -229,6 +229,15 @@ export default function SettingsPage() {
           />
         </Section>
 
+        {/* ── About ── */}
+        <Section title="About">
+          <SettingRow
+            icon={<Info className="w-4 h-4" style={{ color: 'var(--c-gold)' }} />}
+            label="Version"
+            right={<span className="text-lg font-bold" style={{ color: 'var(--c-text)' }}>{__APP_VERSION__}</span>}
+          />
+        </Section>
+
         {/* Sign out */}
         <button
           onClick={handleLogout}

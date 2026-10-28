@@ -39,12 +39,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
-        // skipWaiting is on for this release only. Installs on code that predates
-        // the update prompt cannot show it, so they take this build on their own.
-        // Remove the next line in the next release, so later updates wait for the
-        // user to tap Update (see UpdatePrompt).
-        skipWaiting: true,
-        // clientsClaim hands the open page to a new build as soon as it takes over.
+        // skipWaiting stays off: a new build waits until the user taps Update
+        // (see UpdatePrompt). clientsClaim then hands the open page to it at once.
         clientsClaim: true,
         // Drop caches from previous builds instead of leaving them to
         // accumulate and potentially be served.
