@@ -20,6 +20,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '2.3.1',
+    date: '30 Oct 2026',
+    sections: [{
+      items: [
+        'Invitations are sent to the student\'s phone by text message. Enter the number with its country code, for example +44.',
+        'If a text message cannot be sent, the reason is shown, and the invitation can be copied instead.',
+        'The invitation text names The Hifz App.',
+      ],
+    }],
+  },
+  {
     version: '2.3.0',
     date: '30 Oct 2026',
     sections: [{

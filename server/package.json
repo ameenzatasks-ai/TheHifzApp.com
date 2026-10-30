@@ -1,6 +1,6 @@
 {
   "name": "nazirah-server",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "private": true,
   "main": "dist/index.js",
   "scripts": {
@@ -34,6 +34,7 @@
     "nodemailer": "^8.0.10",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "twilio": "^6.2.0",
     "typescript": "^5.4.3",
     "zod": "^3.22.4"
   },

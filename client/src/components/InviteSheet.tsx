@@ -37,9 +37,9 @@ export default function InviteSheet({ open, onClose, classId, className, joinCod
       const result = await invitesApi.send(classId, phone.trim());
       setSentMessage(result.message);
       if (result.smsSent) {
-        toast.success('Invitation sent via SMS!');
+        toast.success('Invitation sent by text message');
       } else {
-        toast('SMS not configured — copy the message below', { icon: '📋' });
+        toast(result.smsError ?? 'Not sent by text message. Copy the message below instead.', { icon: '📋', duration: 6000 });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to send invitation');
@@ -81,7 +81,7 @@ export default function InviteSheet({ open, onClose, classId, className, joinCod
           /* — Input stage — */
           <>
             <p className="text-sm" style={{ color: 'var(--c-text-muted)' }}>
-              Enter the student's phone number. We'll prepare an invite message with the class join code{' '}
+              Enter the student's phone number with its country code, for example +44. We'll text them an invite with the class join code{' '}
               <span className="font-mono font-semibold" style={{ color: 'var(--c-gold)' }}>{joinCode}</span>.
             </p>
 
