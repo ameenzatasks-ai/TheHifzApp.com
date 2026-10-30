@@ -16,7 +16,7 @@ A private web application for tracking Quran Hifz (memorisation). Students log t
 - **History** — cross-class timeline of all past tasks and Ustadh scores
 
 ### Ustadhs
-- **Class management** — create classes, generate invite links, manage enrolments
+- **Class management** — create classes, share join codes, manage enrolments
 - **Student review** — score each student's Dawr cycles (and specific historical cycles), Sabaq, Sabaq Para, Tajwīd, and Adab on a 1–7 scale
 - **Hifz History** — per-student breakdown of all submissions including lines memorised
 - **Today view** — see which students have submitted tasks for the current day
@@ -70,7 +70,7 @@ A private web application for tracking Quran Hifz (memorisation). Students log t
 ├── server/                  # Express backend
 │   └── src/
 │       ├── auth/            # Google OAuth flow + JWT middleware
-│       ├── classes/         # Class CRUD, enrolments, invitations
+│       ├── classes/         # Class CRUD, enrolments
 │       ├── dawr/            # Dawr log grid, cycle management, scoring
 │       └── hifz-tasks/      # Daily task submission + SP/Sabaq scoring
 └── .env.example
@@ -159,7 +159,7 @@ SQLite is created automatically at `server/nazirah.db` on first run. Migrations 
 | `users` | Accounts (Google sub, name, email, role) |
 | `classes` | Classes owned by an Ustadh |
 | `enrolments` | Student ↔ class membership |
-| `class_invitations` | Invite tokens with expiry |
+| `class_invitations` | Invitations sent before 2.3.2 (no longer created) |
 | `hifz_daily_tasks` | Student task submissions (Dawr, Sabaq, SP) |
 | `hifz_task_scores` | Ustadh scores per date (SP, Sabaq, Tajwīd, Adab) |
 | `hifz_dawr_log` | Dawr grid cells — one row per (student, class, juz, quarter, date) |
@@ -178,8 +178,6 @@ GET    /api/auth/me                Current user
 GET    /api/classes                My classes
 POST   /api/classes                Create class (Ustadh)
 DELETE /api/classes/:id            Delete class (Ustadh, owner)
-POST   /api/classes/:id/invite     Generate invite link
-POST   /api/classes/join/:token    Student joins via invite
 
 POST   /api/hifz-tasks             Submit tasks for a date (Student)
 GET    /api/hifz-tasks             Own task history

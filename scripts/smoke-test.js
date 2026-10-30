@@ -93,7 +93,6 @@ async function hit(name, session, method, path, body, expect) {
     record('roster counts are real numbers',
            !first || typeof first?.counts?.GREEN === 'number', JSON.stringify(first?.counts));
     await hit('rename class', t, 'PATCH', `/api/classes/${classId}`, { name: 'Renamed' });
-    await hit('invite', t, 'POST', `/api/classes/${classId}/invite`, { phone: '+447700900000' });
     if (studentId) {
       await hit('student pages (class)', t, 'GET', `/api/classes/${classId}/students/${studentId}/pages`);
       await hit('student summary (class)', t, 'GET', `/api/classes/${classId}/students/${studentId}/summary`);

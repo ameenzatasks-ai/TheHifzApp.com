@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, UserPlus, MoreVertical, Pencil, Trash2, LogOut, ChevronRight, Users } from 'lucide-react';
+import { ArrowLeft, Copy, Check, MoreVertical, Pencil, Trash2, LogOut, ChevronRight, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { classesApi } from '../../api/classes';
 import type { ClassWithMeta } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
-import InviteSheet from '../../components/InviteSheet';
 import ConfirmModal from '../../components/ConfirmModal';
 import BottomSheet from '../../components/BottomSheet';
 import Spinner from '../../components/Spinner';
@@ -147,7 +146,6 @@ export default function ClassShell() {
 
   const [cls, setCls] = useState<ClassWithMeta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [inviteOpen, setInviteOpen] = useState(false);
   const [coUstathsOpen, setCoUstathsOpen] = useState(false);
   const [joinAsUstadhOpen, setJoinAsUstadhOpen] = useState(false);
 
@@ -227,10 +225,6 @@ export default function ClassShell() {
 
   if (!cls) return null;
 
-  // The main Ustadh and co-ustadhs manage students and invite them; a Ustadh who
-  // is only enrolled here as a learner does neither.
-  const canManageTeam = isUstadh && !!(cls.is_owner || cls.is_co_ustadh);
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--c-bg)' }}>
       {/* Header */}
@@ -249,18 +243,6 @@ export default function ClassShell() {
         <div className="flex-1 min-w-0">
           <h1 className="font-semibold text-base truncate" style={{ color: 'var(--c-text)' }}>{cls.name}</h1>
         </div>
-
-        {canManageTeam && (
-          <button
-            onClick={() => setInviteOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all active:scale-95"
-            style={{ backgroundColor: 'var(--c-gold-bg)', color: 'var(--c-gold)' }}
-            aria-label="Invite student"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            Invite
-          </button>
-        )}
 
         <CopyCode code={cls.join_code} />
 
@@ -303,17 +285,6 @@ export default function ClassShell() {
             <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(250,247,240,0.4)' }} />
           </button>
         </div>
-      )}
-
-      {/* Invite sheet (main Ustadh and co-ustadhs) */}
-      {canManageTeam && (
-        <InviteSheet
-          open={inviteOpen}
-          onClose={() => setInviteOpen(false)}
-          classId={id}
-          className={cls.name}
-          joinCode={cls.join_code}
-        />
       )}
 
       {/* Rename sheet */}

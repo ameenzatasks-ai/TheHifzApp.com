@@ -20,6 +20,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '2.3.2',
+    date: '30 Oct 2026',
+    sections: [{
+      items: [
+        'Inviting a student by phone number is removed, along with the Invite button. To add a student, share the class join code.',
+      ],
+    }],
+  },
+  {
     version: '2.3.1',
     date: '30 Oct 2026',
     sections: [{

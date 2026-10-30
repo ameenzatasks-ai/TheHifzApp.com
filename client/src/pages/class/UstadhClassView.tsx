@@ -110,7 +110,7 @@ export default function UstadhClassView({ classId }: { classId: number }) {
     <div className="p-4 max-w-md mx-auto">
       {students.length === 0 ? (
         <p className="text-center text-sm mt-12" style={{ color: 'var(--c-text-faint)' }}>
-          No students yet. Tap "Invite" or share the join code.
+          No students yet. Share the class join code so they can join.
         </p>
       ) : (
         <div className="flex flex-col gap-2">

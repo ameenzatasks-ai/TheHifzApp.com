@@ -19,7 +19,6 @@ import classesRouter from './classes/router';
 import pagesRouter from './pages/router';
 import hifzRouter from './hifz/router';
 import nazirahRouter from './nazirah/router';
-import inviteRouter from './invite/router';
 import hifzTasksRouter from './hifz-tasks/router';
 import dawrRouter from './dawr/router';
 
@@ -86,7 +85,6 @@ app.get('/api/health', (_req: Request, res: Response) => {
 // ── API Routes ─────────────────────────────────────────────────
 app.use('/api/auth', authRouter);
 app.use('/api/classes', classesRouter);
-app.use('/api/classes/:classId/invite', inviteRouter);
 app.use('/api/pages', pagesRouter);
 app.use('/api/hifz', hifzRouter);
 app.use('/api/nazirah', nazirahRouter);
