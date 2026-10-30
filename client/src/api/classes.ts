@@ -13,13 +13,16 @@ export interface StudentPagesResponse {
 }
 
 export interface CoUstadh {
-  id: number;
+  /** The class_ustadhs row. Null for the main Ustadh, who is not a co-ustadh row. */
+  id: number | null;
   ustadh_id: number;
   name: string;
   email: string;
   avatar_url: string | null;
-  added_at: string;
+  added_at: string | null;
   added_by_name: string | null;
+  /** True for the main Ustadh who owns the class. */
+  is_owner: boolean;
 }
 
 export const classesApi = {

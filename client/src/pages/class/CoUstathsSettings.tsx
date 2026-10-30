@@ -71,7 +71,7 @@ export default function CoUstathsSettings({
       <BottomSheet
         open={open}
         onClose={() => !loading && !revoking && onClose()}
-        title="Ustadh Code & Co-Teachers"
+        title={isOwner ? 'Ustadh Code & Co-Teachers' : 'Co-Teachers'}
       >
         <div className="p-5 flex flex-col gap-6">
           {/* Ustadh Code Section: only the owner is sent the code */}
@@ -94,24 +94,20 @@ export default function CoUstathsSettings({
             </div>
           )}
 
-          {/* Co-Ustadhs List */}
+          {/* Every Ustadh of the class: the main Ustadh first, then the co-ustadhs */}
           <div>
             <p className="text-xs font-semibold mb-2" style={{ color: 'var(--c-text-muted)' }}>
-              CO-TEACHERS ({coUstadhs.length})
+              CO-TEACHERS ({coUstadhs.filter(cu => !cu.is_owner).length})
             </p>
             {loading ? (
               <div className="flex justify-center py-4">
                 <Spinner size={20} color="var(--c-gold)" />
               </div>
-            ) : coUstadhs.length === 0 ? (
-              <p className="text-sm py-3" style={{ color: 'var(--c-text-faint)' }}>
-                No co-teachers yet. Share the ustadh code above.
-              </p>
             ) : (
               <div className="flex flex-col gap-2">
                 {coUstadhs.map(cu => (
                   <div
-                    key={cu.id}
+                    key={cu.ustadh_id}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
                     style={{ backgroundColor: 'var(--c-bg-subtle)' }}
                   >
@@ -123,7 +119,11 @@ export default function CoUstathsSettings({
                         {cu.email}
                       </p>
                     </div>
-                    {isOwner && (
+                    {cu.is_owner ? (
+                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--c-gold)' }}>
+                        Owner
+                      </span>
+                    ) : isOwner && (
                       <button
                         onClick={() => setRevokeId(cu.ustadh_id)}
                         className="p-1.5 rounded-lg transition-all active:scale-90"
@@ -135,6 +135,11 @@ export default function CoUstathsSettings({
                     )}
                   </div>
                 ))}
+                {coUstadhs.every(cu => cu.is_owner) && (
+                  <p className="text-sm py-2" style={{ color: 'var(--c-text-faint)' }}>
+                    No co-teachers yet.{isOwner && ' Share the ustadh code above.'}
+                  </p>
+                )}
               </div>
             )}
           </div>

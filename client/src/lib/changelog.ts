@@ -20,6 +20,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '2.3.0',
+    date: '30 Oct 2026',
+    sections: [{
+      items: [
+        'Co-ustadhs can invite students by phone number, the same way the main Ustadh can.',
+        'Co-ustadhs can see the main Ustadh and every other co-ustadh of the class under Co-teachers.',
+        'Only the main Ustadh can rename or delete a class.',
+      ],
+    }],
+  },
+  {
     version: '2.2.0',
     date: '30 Oct 2026',
     sections: [{

@@ -43,6 +43,8 @@ export interface ClassWithMeta extends Class {
   joined_at?: string;
   /** Present for Ustadh listings: true = they own the class, false = enrolled as learner */
   is_owner?: boolean;
+  /** True when this Ustadh joined the class with the Ustadh Code. */
+  is_co_ustadh?: boolean;
 }
 
 // Re-export the hifz domain types so consumers can pick a single import root.

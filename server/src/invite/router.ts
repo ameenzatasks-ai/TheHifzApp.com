@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import db from '../db';
 import { authenticate as requireAuth, AuthRequest } from '../auth/middleware';
+import { isAuthorizedUstadh } from '../classes/access';
 
 const router = Router({ mergeParams: true }); // inherits :classId from parent mount
 
@@ -14,13 +15,15 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'A valid phone number is required' });
   }
 
-  // Verify caller is the ustadh who owns this class
+  // The main Ustadh and any co-ustadh of this class can invite students
   const cls = await db.prepare(
-    'SELECT id, name, join_code, ustadh_id FROM classes WHERE id = ?'
-  ).get(classId) as { id: number; name: string; join_code: string; ustadh_id: number } | undefined;
+    'SELECT id, name, join_code FROM classes WHERE id = ?'
+  ).get(classId) as { id: number; name: string; join_code: string } | undefined;
 
   if (!cls) return res.status(404).json({ error: 'Class not found' });
-  if (cls.ustadh_id !== user.id) return res.status(403).json({ error: 'Only the ustadh can invite students' });
+  if (!await isAuthorizedUstadh(classId, user.id)) {
+    return res.status(403).json({ error: 'Only the ustadhs of this class can invite students' });
+  }
 
   const normalised = phone.trim();
 

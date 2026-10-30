@@ -4,6 +4,7 @@ import { customAlphabet } from 'nanoid';
 import db from '../db';
 import { authenticate, requireRole, AuthRequest } from '../auth/middleware';
 import { sweepRetest } from '../hifz/retest';
+import { isAuthorizedUstadh } from './access';
 
 const nanoid = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
 
@@ -38,15 +39,6 @@ async function generateUstadhCode(): Promise<string> {
     if (!taken) return code;
   }
   throw new Error('Could not allocate an unused ustadh code');
-}
-
-/** Check if user is authorized ustadh for the class (owner or co-ustadh) */
-async function isAuthorizedUstadh(classId: number, ustadhId: number): Promise<boolean> {
-  const owner = await db.prepare('SELECT id FROM classes WHERE id = ? AND ustadh_id = ?').get(classId, ustadhId);
-  if (owner) return true;
-
-  const coUstadh = await db.prepare('SELECT id FROM class_ustadhs WHERE class_id = ? AND ustadh_id = ?').get(classId, ustadhId);
-  return !!coUstadh;
 }
 
 /**
@@ -176,7 +168,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
 
   if (!isOwner && !isCoUstadh && !isEnrolled) { res.status(404).json({ error: 'Class not found' }); return; }
 
-  res.json({ ...(isOwner ? cls : withoutUstadhCode(cls)), is_owner: isOwner });
+  res.json({ ...(isOwner ? cls : withoutUstadhCode(cls)), is_owner: isOwner, is_co_ustadh: isCoUstadh });
 });
 
 // PATCH /api/classes/:id — Ustadh renames their class
@@ -392,6 +384,14 @@ router.get('/:id/co-ustadhs', authenticate, requireRole('ustadh'), async (req: A
   const authorized = await isAuthorizedUstadh(classId, req.user!.id);
   if (!authorized) { res.status(404).json({ error: 'Class not found' }); return; }
 
+  // The main Ustadh comes first, then the co-ustadhs, so everyone on the team sees the whole team.
+  const owner = await db.prepare(`
+    SELECT u.id AS ustadh_id, u.name, u.email, u.avatar_url
+    FROM classes c
+    JOIN users u ON u.id = c.ustadh_id
+    WHERE c.id = ?
+  `).get(classId) as any;
+
   const coUstadhs = await db.prepare(`
     SELECT cu.id, u.id as ustadh_id, u.name, u.email, u.avatar_url, cu.added_at,
            added_by_user.name as added_by_name
@@ -400,9 +400,12 @@ router.get('/:id/co-ustadhs', authenticate, requireRole('ustadh'), async (req: A
     LEFT JOIN users added_by_user ON added_by_user.id = cu.added_by
     WHERE cu.class_id = ?
     ORDER BY cu.added_at DESC
-  `).all(classId);
+  `).all(classId) as any[];
 
-  res.json(coUstadhs);
+  res.json([
+    { id: null, ustadh_id: owner.ustadh_id, name: owner.name, email: owner.email, avatar_url: owner.avatar_url, added_at: null, added_by_name: null, is_owner: true },
+    ...coUstadhs.map(cu => ({ ...cu, is_owner: false })),
+  ]);
 });
 
 // DELETE /api/classes/:id/co-ustadhs/:ustadhId — Revoke co-ustadh access

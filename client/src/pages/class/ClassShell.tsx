@@ -37,6 +37,7 @@ function CopyCode({ code }: { code: string }) {
 function ClassMenu({
   isUstadh,
   isOwner,
+  isCoUstadh,
   onRename,
   onDelete,
   onLeave,
@@ -45,6 +46,7 @@ function ClassMenu({
 }: {
   isUstadh: boolean;
   isOwner: boolean;
+  isCoUstadh: boolean;
   onRename: () => void;
   onDelete: () => void;
   onLeave: () => void;
@@ -85,21 +87,24 @@ function ClassMenu({
         >
           {isUstadh ? (
             <>
+              {isOwner || isCoUstadh ? (
+                <MenuItem
+                  icon={Users}
+                  label={isOwner ? 'Manage co-teachers' : 'Co-teachers'}
+                  onClick={() => { setOpen(false); onManageCoUstadhs(); }}
+                />
+              ) : (
+                <MenuItem icon={Users} label="Join as co-teacher" onClick={() => { setOpen(false); onJoinAsUstadh(); }} />
+              )}
+              {/* Renaming and deleting the class are the main Ustadh's alone */}
               {isOwner && (
                 <>
-                  <MenuItem icon={Users} label="Manage co-teachers" onClick={() => { setOpen(false); onManageCoUstadhs(); }} />
                   <div style={{ height: 1, backgroundColor: 'var(--c-border)' }} />
+                  <MenuItem icon={Pencil} label="Rename class" onClick={() => { setOpen(false); onRename(); }} />
+                  <div style={{ height: 1, backgroundColor: 'var(--c-border)' }} />
+                  <MenuItem icon={Trash2} label="Delete class" destructive onClick={() => { setOpen(false); onDelete(); }} />
                 </>
               )}
-              {!isOwner && (
-                <>
-                  <MenuItem icon={Users} label="Join as co-teacher" onClick={() => { setOpen(false); onJoinAsUstadh(); }} />
-                  <div style={{ height: 1, backgroundColor: 'var(--c-border)' }} />
-                </>
-              )}
-              <MenuItem icon={Pencil} label="Rename class" onClick={() => { setOpen(false); onRename(); }} />
-              <div style={{ height: 1, backgroundColor: 'var(--c-border)' }} />
-              <MenuItem icon={Trash2} label="Delete class" destructive onClick={() => { setOpen(false); onDelete(); }} />
             </>
           ) : (
             <MenuItem icon={LogOut} label="Leave class" destructive onClick={() => { setOpen(false); onLeave(); }} />
@@ -222,6 +227,10 @@ export default function ClassShell() {
 
   if (!cls) return null;
 
+  // The main Ustadh and co-ustadhs manage students and invite them; a Ustadh who
+  // is only enrolled here as a learner does neither.
+  const canManageTeam = isUstadh && !!(cls.is_owner || cls.is_co_ustadh);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--c-bg)' }}>
       {/* Header */}
@@ -241,7 +250,7 @@ export default function ClassShell() {
           <h1 className="font-semibold text-base truncate" style={{ color: 'var(--c-text)' }}>{cls.name}</h1>
         </div>
 
-        {isUstadh && (
+        {canManageTeam && (
           <button
             onClick={() => setInviteOpen(true)}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all active:scale-95"
@@ -258,6 +267,7 @@ export default function ClassShell() {
         <ClassMenu
           isUstadh={isUstadh}
           isOwner={cls.is_owner ?? false}
+          isCoUstadh={cls.is_co_ustadh ?? false}
           onRename={openRename}
           onDelete={() => setDeleteOpen(true)}
           onLeave={() => setLeaveOpen(true)}
@@ -295,8 +305,8 @@ export default function ClassShell() {
         </div>
       )}
 
-      {/* Invite sheet (Ustadh) */}
-      {isUstadh && (
+      {/* Invite sheet (main Ustadh and co-ustadhs) */}
+      {canManageTeam && (
         <InviteSheet
           open={inviteOpen}
           onClose={() => setInviteOpen(false)}
@@ -364,7 +374,7 @@ export default function ClassShell() {
         onCancel={() => setLeaveOpen(false)}
       />
 
-      {/* Co-ustadhs settings (owner only) */}
+      {/* Co-teachers sheet: everyone on the team sees it; only the owner changes it */}
       {cls && (
         <CoUstathsSettings
           classId={id}
