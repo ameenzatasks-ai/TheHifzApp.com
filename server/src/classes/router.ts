@@ -43,7 +43,7 @@ async function generateUstadhCode(): Promise<string> {
 
 /**
  * The Ustadh Code lets whoever holds it join a class as a co-ustadh, so it is
- * only ever sent back to the class's owner.
+ * only sent back to the class's owner and its co-ustadhs.
  */
 function withoutUstadhCode<T extends { ustadh_code?: string }>(cls: T): Omit<T, 'ustadh_code'> {
   const { ustadh_code, ...rest } = cls;
@@ -168,7 +168,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
 
   if (!isOwner && !isCoUstadh && !isEnrolled) { res.status(404).json({ error: 'Class not found' }); return; }
 
-  res.json({ ...(isOwner ? cls : withoutUstadhCode(cls)), is_owner: isOwner, is_co_ustadh: isCoUstadh });
+  res.json({ ...(isOwner || isCoUstadh ? cls : withoutUstadhCode(cls)), is_owner: isOwner, is_co_ustadh: isCoUstadh });
 });
 
 // PATCH /api/classes/:id — Ustadh renames their class
@@ -371,10 +371,11 @@ router.post('/join-ustadh', authenticate, requireRole('ustadh'), async (req: Aut
 
   const ustadh = await db.prepare('SELECT name, avatar_url FROM users WHERE id = ?').get(cls.ustadh_id) as any;
   res.status(201).json({
-    ...withoutUstadhCode(cls),
+    ...cls,
     ustadh_name: ustadh?.name,
     ustadh_avatar: ustadh?.avatar_url,
     is_owner: false,
+    is_co_ustadh: true,
   });
 });
 

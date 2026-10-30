@@ -20,6 +20,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '2.3.3',
+    date: '30 Oct 2026',
+    sections: [{
+      items: [
+        'Co-teachers can see the Ustadh Code under Co-Teachers, and copy it to add another co-teacher.',
+        'Joining as a co-teacher updates the class menu straight away.',
+      ],
+    }],
+  },
+  {
     version: '2.3.2',
     date: '30 Oct 2026',
     sections: [{
