@@ -3,15 +3,15 @@
  *
  * Sections:
  *   1. Theme     — Dark / Light toggle
- *   2. Layout    — Navigation style preference (sidebar vs bottom bar)
- *   3. How It Works — Quick-start guide / tour
- *   4. General   — Miscellaneous preferences
- *   5. Account   — Profile info + sign out
+ *   2. How It Works — Quick-start guide, tour and feature notes
+ *   3. General   — Miscellaneous preferences
+ *   4. Account   — Profile info + sign out
+ *   5. About     — Version and what's new
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Settings, Sun, Moon, Monitor, Map, Info,
+  Settings, Sun, Moon, Map, Info,
   LogOut, User, ChevronRight, BookOpen, Star,
   Grid3x3, Clock, Bell, BellOff,
 } from 'lucide-react';
@@ -19,6 +19,8 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTour } from '../contexts/TourContext';
+import BottomSheet from '../components/BottomSheet';
+import { CHANGELOG } from '../lib/changelog';
 
 /* ── Section wrapper ── */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -83,6 +85,88 @@ function TogglePill({ active, onToggle }: { active: boolean; onToggle: () => voi
   );
 }
 
+/* ── App features (tapping a card opens its explanation) ── */
+interface FeatureInfo {
+  icon: React.ReactNode;
+  title: string;
+  summary: string;
+  details: string[];
+  points?: { label: string; text?: string }[];
+}
+
+const FEATURES: FeatureInfo[] = [
+  {
+    icon: <BookOpen className="w-3.5 h-3.5" style={{ color: '#0E9C78' }} />,
+    title: 'Nazirah Tracking',
+    summary: 'Track page statuses across 604 pages with colour-coded progress.',
+    details: [
+      'Nazirah is reading the Qur\'an while looking at the Mushaf. This tracker shows every page, grouped by Juz, so you can see where you are.',
+      'Tap a page to choose its status. When you choose Ready for Test 1, a headphones button next to it plays the recitation.',
+      'A page that stays Ready to Memorize for ten days turns into Retest Needed on its own.',
+    ],
+    points: [
+      { label: 'Ready for Test 1', text: 'You have listened to the page once and checked the Tajweed rules.' },
+      { label: 'Test 1 Passed', text: 'You are practising the page, with tests in between, before the final test.' },
+      { label: 'Ready for Final Test', text: 'You have finished the practice and are waiting for your Ustadh to test you.' },
+      { label: 'Ready to Memorize', text: 'Your Ustadh has tested you for a final time, and you can memorise the page when you are ready.' },
+      { label: 'Retest Needed', text: 'Ten days have passed since the final test, so the page needs testing again.' },
+      { label: 'Memorized', text: 'The page is memorised in Sabaq.' },
+    ],
+  },
+  {
+    icon: <Star className="w-3.5 h-3.5" style={{ color: '#FFD700' }} />,
+    title: 'Hifz Module',
+    summary: 'Log daily Sabaq, Sabaq Para, and Dawr. Ustadh scores each session 1-7.',
+    details: [
+      'Hifz is complete memorisation of the Qur\'an. From the Home screen, log what you did today.',
+      'Your Ustadh gives each session a score from 1 to 7, and you can see every score in History.',
+    ],
+    points: [
+      { label: 'Sabaq', text: 'Your daily new lesson: the pages you memorise fresh today.' },
+      { label: 'Sabaq Para', text: 'Recent review: revising the pages you have learned lately.' },
+      { label: 'Dawr', text: 'Revision of recently memorised pages.' },
+    ],
+  },
+  {
+    icon: <Grid3x3 className="w-3.5 h-3.5" style={{ color: '#FF7A1A' }} />,
+    title: 'Dawr Log',
+    summary: '30 Juz x 4 quarters grid. Each quarter is scored individually.',
+    details: [
+      'The Dawr Log is a grid of all 30 Juz, and each Juz is split into four quarters.',
+      'Your Ustadh scores each quarter separately, and each quarter is coloured by its score.',
+    ],
+  },
+  {
+    icon: <Clock className="w-3.5 h-3.5" style={{ color: '#B8862A' }} />,
+    title: 'History',
+    summary: 'Split into Nazira and Hifz history. View all past logs and scores.',
+    details: [
+      'History keeps a record of your past work, so you can look back over earlier weeks.',
+    ],
+    points: [
+      { label: 'Nazira', text: 'Your saved weekly logs of the pages you tracked.' },
+      { label: 'Hifz', text: 'Each Sabaq, Sabaq Para and Dawr you logged, by date, with the score your Ustadh gave.' },
+    ],
+  },
+  {
+    icon: <Info className="w-3.5 h-3.5" style={{ color: '#00B0F0' }} />,
+    title: 'Score Scale',
+    summary: '7 = Excellent, 6 = Very Good, 5 = Average, 4 = Below Avg, 3 = Fail, 2 = Bad Fail, 1 = Abysmal.',
+    details: [
+      'Your Ustadh gives each Hifz session one of these scores.',
+    ],
+    points: [
+      { label: '7 · Excellent' },
+      { label: '6 · Very Good' },
+      { label: '5 · Average' },
+      { label: '4 · Below Average' },
+      { label: '3 · Fail' },
+      { label: '2 · Bad Fail' },
+      { label: '1 · Abysmal' },
+    ],
+  },
+];
+
 /* ── Main ── */
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -101,6 +185,10 @@ export default function SettingsPage() {
     try { localStorage.setItem('hifz-notifs', next ? 'on' : 'off'); } catch {}
     toast.success(next ? 'Notifications enabled' : 'Notifications muted');
   }
+
+  // Feature explanation and "What's new" sheets
+  const [openFeature, setOpenFeature] = useState<FeatureInfo | null>(null);
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
 
   async function handleLogout() {
     await logout();
@@ -149,29 +237,30 @@ export default function SettingsPage() {
             onClick={openTour}
           />
 
-          {/* Feature guide cards */}
+          {/* Feature guide cards: tap one to read more */}
           <div className="px-4 py-3" style={{ borderColor: 'var(--c-border)' }}>
             <p className="text-[10px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--c-text-muted)' }}>
               App Features
             </p>
             <div className="flex flex-col gap-2">
-              {[
-                { icon: <BookOpen className="w-3.5 h-3.5" style={{ color: '#0E9C78' }} />, title: 'Nazirah Tracking', desc: 'Track page statuses across 604 pages with colour-coded progress.' },
-                { icon: <Star className="w-3.5 h-3.5" style={{ color: '#FFD700' }} />, title: 'Hifz Module', desc: 'Log daily Sabaq, Sabaq Para, and Dawr. Ustadh scores each session 1-7.' },
-                { icon: <Grid3x3 className="w-3.5 h-3.5" style={{ color: '#FF7A1A' }} />, title: 'Dawr Log', desc: '30 Juz x 4 quarters grid. Each quarter is scored individually.' },
-                { icon: <Clock className="w-3.5 h-3.5" style={{ color: '#B8862A' }} />, title: 'History', desc: 'Split into Nazira and Hifz history. View all past logs and scores.' },
-                { icon: <Info className="w-3.5 h-3.5" style={{ color: '#00B0F0' }} />, title: 'Score Scale', desc: '7 = Excellent, 6 = Very Good, 5 = Average, 4 = Below Avg, 3 = Fail, 2 = Bad Fail, 1 = Abysmal.' },
-              ].map((feat, i) => (
-                <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-xl" style={{ backgroundColor: 'var(--c-bg-subtle)' }}>
+              {FEATURES.map(feat => (
+                <button
+                  key={feat.title}
+                  type="button"
+                  onClick={() => setOpenFeature(feat)}
+                  className="w-full flex items-start gap-2.5 p-2.5 rounded-xl text-left transition-all active:scale-[0.98]"
+                  style={{ backgroundColor: 'var(--c-bg-subtle)' }}
+                >
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                     style={{ backgroundColor: 'var(--c-bg-card)', border: '1px solid var(--c-border)' }}>
                     {feat.icon}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold" style={{ color: 'var(--c-text)' }}>{feat.title}</p>
-                    <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: 'var(--c-text-muted)' }}>{feat.desc}</p>
+                    <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: 'var(--c-text-muted)' }}>{feat.summary}</p>
                   </div>
-                </div>
+                  <ChevronRight className="w-4 h-4 flex-shrink-0 mt-1" style={{ color: 'var(--c-text-faint)' }} />
+                </button>
               ))}
             </div>
           </div>
@@ -186,16 +275,6 @@ export default function SettingsPage() {
             label="Notifications"
             description={notifs ? 'Toast notifications are enabled' : 'Toast notifications are muted'}
             right={<TogglePill active={notifs} onToggle={toggleNotifs} />}
-          />
-          <SettingRow
-            icon={<Monitor className="w-4 h-4" style={{ color: 'var(--c-gold)' }} />}
-            label="Layout"
-            description="Sidebar on desktop, bottom bar on mobile (auto)"
-            right={
-              <span className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ backgroundColor: 'var(--c-bg-subtle)', color: 'var(--c-text-muted)' }}>
-                Auto
-              </span>
-            }
           />
         </Section>
 
@@ -234,7 +313,14 @@ export default function SettingsPage() {
           <SettingRow
             icon={<Info className="w-4 h-4" style={{ color: 'var(--c-gold)' }} />}
             label="Version"
-            right={<span className="text-lg font-bold" style={{ color: 'var(--c-text)' }}>{__APP_VERSION__}</span>}
+            description="See what is new in each update"
+            right={
+              <span className="flex items-center gap-2">
+                <span className="text-lg font-bold" style={{ color: 'var(--c-text)' }}>{__APP_VERSION__}</span>
+                <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--c-text-faint)' }} />
+              </span>
+            }
+            onClick={() => setShowWhatsNew(true)}
           />
         </Section>
 
@@ -251,6 +337,59 @@ export default function SettingsPage() {
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>
+
+        {openFeature && (
+          <BottomSheet open onClose={() => setOpenFeature(null)} title={openFeature.title}>
+            <div className="px-5 py-4 flex flex-col gap-3">
+              {openFeature.details.map((paragraph, i) => (
+                <p key={i} className="text-sm leading-relaxed" style={{ color: 'var(--c-text)' }}>{paragraph}</p>
+              ))}
+              {openFeature.points && (
+                <ul className="flex flex-col gap-2 mt-1">
+                  {openFeature.points.map(point => (
+                    <li
+                      key={point.label}
+                      className="px-3.5 py-3 rounded-xl"
+                      style={{ backgroundColor: 'var(--c-bg-subtle)', border: '1px solid var(--c-border-soft)' }}
+                    >
+                      <p className="text-sm font-semibold" style={{ color: 'var(--c-text)' }}>{point.label}</p>
+                      {point.text && (
+                        <p className="text-xs leading-snug mt-0.5" style={{ color: 'var(--c-text-muted)' }}>{point.text}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </BottomSheet>
+        )}
+
+        {showWhatsNew && (
+          <BottomSheet open onClose={() => setShowWhatsNew(false)} title="What's new">
+            <div className="px-5 py-4 flex flex-col gap-6">
+              {CHANGELOG.map(release => (
+                <div key={release.version}>
+                  <div className="flex items-baseline justify-between gap-3 mb-2">
+                    <h3 className="text-lg font-bold" style={{ color: 'var(--c-text)' }}>Version {release.version}</h3>
+                    <p className="text-[11px]" style={{ color: 'var(--c-text-muted)' }}>{release.date}</p>
+                  </div>
+                  {release.sections.map((section, i) => (
+                    <div key={i} className="mb-3">
+                      {section.heading && (
+                        <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--c-text-muted)' }}>
+                          {section.heading}
+                        </p>
+                      )}
+                      <ul className="flex flex-col gap-1.5 list-disc pl-5 text-sm" style={{ color: 'var(--c-text)' }}>
+                        {section.items.map((item, j) => <li key={j}>{item}</li>)}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </BottomSheet>
+        )}
       </div>
     </div>
   );

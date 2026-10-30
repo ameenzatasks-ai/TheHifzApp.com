@@ -23,31 +23,26 @@ interface Props {
   onSelect: (status: PageStatus) => void | Promise<void>;
   onUntouch: () => void | Promise<void>;
   onClose: () => void;
-  userRole?: 'student' | 'ustadh';
-  isViewingStudent?: boolean;
 }
 
 function StatusCard({
   status,
   isCurrent,
   onClick,
-  disabled,
 }: {
   status: PageStatus;
   isCurrent: boolean;
   onClick: () => void;
-  disabled?: boolean;
 }) {
   const p = PALETTE[status];
   const Icon = p.icon;
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
-      className="relative w-full overflow-hidden rounded-2xl text-left transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+      className="relative w-full overflow-hidden rounded-2xl text-left transition-all active:scale-[0.99]"
       style={{
-        background: disabled ? 'var(--c-bg-subtle)' : p.fill,
-        color: disabled ? 'var(--c-text-muted)' : p.text,
+        background: p.fill,
+        color: p.text,
         boxShadow: isCurrent
           ? `0 0 0 2px ${p.accent}, 0 4px 14px rgba(0,0,0,0.25)`
           : '0 1px 3px rgba(0,0,0,0.18)',
@@ -94,7 +89,7 @@ function StatusCard({
 }
 
 export default function PageEditor({
-  open, pageNumber, currentStatus, onSelect, onUntouch, onClose, userRole, isViewingStudent,
+  open, pageNumber, currentStatus, onSelect, onUntouch, onClose,
 }: Props) {
   const navigate = useNavigate();
 
@@ -165,7 +160,6 @@ export default function PageEditor({
                 status={s}
                 isCurrent={currentStatus === s}
                 onClick={() => onSelect(s)}
-                disabled={isViewingStudent && userRole === 'ustadh' && s !== 'RED'}
               />
               {s === 'BLACK' && (
                 <button

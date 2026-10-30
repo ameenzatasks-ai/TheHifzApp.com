@@ -15,7 +15,6 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { History, BookmarkPlus, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../contexts/AuthContext';
 import { useConfetti } from '../components/Confetti';
 import { hifzApi, type JuzGridPage } from '../api/hifz';
 import type { PageStatus } from '../../../shared/juz-map';
@@ -107,7 +106,6 @@ function PageTile({ page, onTap, highlighted }: { page: JuzGridPage; onTap: () =
 }
 
 export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazira, readOnly = false }: Props) {
-  const { user } = useAuth();
   const { burst } = useConfetti();
 
   /** The Juz the selector shows — driven by scroll position, not by filtering. */
@@ -529,8 +527,6 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
           open
           pageNumber={editorPage.pageNumber}
           currentStatus={editorPage.status}
-          userRole={user?.role as 'student' | 'ustadh' | undefined}
-          isViewingStudent={studentId !== undefined}
           onSelect={async (s) => {
             if (s === 'AMBER') {
               // Show practice counter for In Practice selection

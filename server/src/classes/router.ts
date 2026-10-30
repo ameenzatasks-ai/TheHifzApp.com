@@ -49,6 +49,15 @@ async function isAuthorizedUstadh(classId: number, ustadhId: number): Promise<bo
   return !!coUstadh;
 }
 
+/**
+ * The Ustadh Code lets whoever holds it join a class as a co-ustadh, so it is
+ * only ever sent back to the class's owner.
+ */
+function withoutUstadhCode<T extends { ustadh_code?: string }>(cls: T): Omit<T, 'ustadh_code'> {
+  const { ustadh_code, ...rest } = cls;
+  return rest;
+}
+
 const router = Router();
 
 // POST /api/classes — Ustadh creates a class
@@ -100,8 +109,29 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response): Promise<v
         AND c.ustadh_id != ?
     `).all(user.id, user.id);
 
-    // Merge and sort by created_at DESC
-    const all = [...owned, ...enrolled].sort((a: any, b: any) =>
+    // Co-taught classes (is_owner = 0): joined with a Ustadh Code. Without this
+    // a co-ustadh could join a class and never see it again.
+    const coTaught = await db.prepare(`
+      SELECT c.id, c.name, c.ustadh_id, c.join_code, c.created_at,
+             (SELECT COUNT(*) FROM enrolments e WHERE e.class_id = c.id) AS student_count,
+             u.name       AS ustadh_name,
+             cu.added_at  AS joined_at,
+             0            AS is_owner
+      FROM class_ustadhs cu
+      JOIN classes c ON c.id = cu.class_id
+      JOIN users   u ON u.id = c.ustadh_id
+      WHERE cu.ustadh_id = ?
+        AND c.ustadh_id != ?
+    `).all(user.id, user.id);
+
+    // Merge, keeping the first entry for each class (owned, then co-taught, then
+    // enrolled), and sort by created_at DESC. SQLite returns is_owner as 0 or 1,
+    // and the client reads it as a boolean, so convert it here.
+    const byId = new Map<number, any>();
+    for (const row of [...owned, ...coTaught, ...enrolled] as any[]) {
+      if (!byId.has(row.id)) byId.set(row.id, { ...row, is_owner: !!row.is_owner });
+    }
+    const all = [...byId.values()].sort((a: any, b: any) =>
       b.created_at.localeCompare(a.created_at)
     );
     res.json(all);
@@ -114,14 +144,14 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response): Promise<v
       WHERE e.student_id = ?
       ORDER BY e.joined_at DESC
     `).all(user.id);
-    res.json(classes);
+    res.json(classes.map(withoutUstadhCode));
   }
 });
 
 // GET /api/classes/:id — class details.
-// Access is granted by relationship, not by role: the owning Ustadh, or anyone
-// (student OR ustadh) enrolled in the class. An Ustadh who joins someone else's
-// class is a learner there, so ownership alone must not gate access.
+// Access is granted by relationship, not by role: the owning Ustadh, a co-ustadh,
+// or anyone (student OR ustadh) enrolled in the class. An Ustadh who joins someone
+// else's class is a learner there, so ownership alone must not gate access.
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   const classId = parseInt(req.params.id, 10);
   const user = req.user!;
@@ -137,13 +167,16 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
   const isOwner = cls.ustadh_id === user.id;
   // Must be awaited: !!promise is always true, which would grant every
   // authenticated user access to every class.
+  const isCoUstadh = !isOwner && !!await db
+    .prepare('SELECT id FROM class_ustadhs WHERE class_id = ? AND ustadh_id = ?')
+    .get(classId, user.id);
   const isEnrolled = !!await db
     .prepare('SELECT id FROM enrolments WHERE class_id = ? AND student_id = ?')
     .get(classId, user.id);
 
-  if (!isOwner && !isEnrolled) { res.status(404).json({ error: 'Class not found' }); return; }
+  if (!isOwner && !isCoUstadh && !isEnrolled) { res.status(404).json({ error: 'Class not found' }); return; }
 
-  res.json({ ...cls, is_owner: isOwner });
+  res.json({ ...(isOwner ? cls : withoutUstadhCode(cls)), is_owner: isOwner });
 });
 
 // PATCH /api/classes/:id — Ustadh renames their class
@@ -204,7 +237,7 @@ router.post('/join', authenticate, async (req: AuthRequest, res: Response): Prom
 
   await db.prepare('INSERT INTO enrolments (class_id, student_id) VALUES (?, ?)').run(cls.id, req.user!.id);
   const ustadh = await db.prepare('SELECT name, avatar_url FROM users WHERE id = ?').get(cls.ustadh_id) as any;
-  res.status(201).json({ ...cls, ustadh_name: ustadh?.name, ustadh_avatar: ustadh?.avatar_url });
+  res.status(201).json({ ...withoutUstadhCode(cls), ustadh_name: ustadh?.name, ustadh_avatar: ustadh?.avatar_url });
 });
 
 // DELETE /api/classes/:id/leave — Student leaves a class
@@ -326,23 +359,31 @@ router.post('/join-ustadh', authenticate, requireRole('ustadh'), async (req: Aut
   const cls = await db.prepare('SELECT * FROM classes WHERE ustadh_code = ?').get(code) as any;
   if (!cls) { res.status(404).json({ error: 'Invalid ustadh code' }); return; }
 
-  // Prevent joining own class twice
+  // The message names the class, so it is clear which one the code belongs to.
   if (cls.ustadh_id === req.user!.id) {
-    res.status(409).json({ error: 'Cannot join your own class as co-ustadh' });
+    res.status(409).json({ error: `You own "${cls.name}" on this account, so you cannot join it as a co-ustadh.` });
     return;
   }
 
   const existing = await db
     .prepare('SELECT id FROM class_ustadhs WHERE class_id = ? AND ustadh_id = ?')
     .get(cls.id, req.user!.id);
-  if (existing) { res.status(409).json({ error: 'Already a co-ustadh in this class' }); return; }
+  if (existing) {
+    res.status(409).json({ error: `You are already a co-ustadh in "${cls.name}".` });
+    return;
+  }
 
   await db
     .prepare('INSERT INTO class_ustadhs (class_id, ustadh_id, added_by) VALUES (?, ?, ?)')
     .run(cls.id, req.user!.id, cls.ustadh_id);
 
   const ustadh = await db.prepare('SELECT name, avatar_url FROM users WHERE id = ?').get(cls.ustadh_id) as any;
-  res.status(201).json({ ...cls, ustadh_name: ustadh?.name, ustadh_avatar: ustadh?.avatar_url });
+  res.status(201).json({
+    ...withoutUstadhCode(cls),
+    ustadh_name: ustadh?.name,
+    ustadh_avatar: ustadh?.avatar_url,
+    is_owner: false,
+  });
 });
 
 // GET /api/classes/:id/co-ustadhs — List co-ustadhs for a class

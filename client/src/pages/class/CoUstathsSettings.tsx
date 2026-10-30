@@ -74,23 +74,25 @@ export default function CoUstathsSettings({
         title="Ustadh Code & Co-Teachers"
       >
         <div className="p-5 flex flex-col gap-6">
-          {/* Ustadh Code Section */}
-          <div>
-            <p className="text-xs font-semibold mb-2" style={{ color: 'var(--c-text-muted)' }}>
-              USTADH CODE
-            </p>
-            <p className="text-[11px] mb-3" style={{ color: 'var(--c-text-faint)' }}>
-              Share this code with other ustadhs to add them as co-teachers
-            </p>
-            <button
-              onClick={copyCode}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-mono font-semibold transition-all active:scale-95"
-              style={{ backgroundColor: 'var(--c-gold-bg)', color: 'var(--c-gold)' }}
-            >
-              {ustadhCode}
-              {codeCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            </button>
-          </div>
+          {/* Ustadh Code Section: only the owner is sent the code */}
+          {isOwner && (
+            <div>
+              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--c-text-muted)' }}>
+                USTADH CODE
+              </p>
+              <p className="text-[11px] mb-3" style={{ color: 'var(--c-text-faint)' }}>
+                Share this code with other ustadhs to add them as co-teachers
+              </p>
+              <button
+                onClick={copyCode}
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-mono font-semibold transition-all active:scale-95"
+                style={{ backgroundColor: 'var(--c-gold-bg)', color: 'var(--c-gold)' }}
+              >
+                {ustadhCode}
+                {codeCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
+          )}
 
           {/* Co-Ustadhs List */}
           <div>

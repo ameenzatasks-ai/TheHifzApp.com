@@ -30,19 +30,8 @@ export default function JoinAsUstadhSheet({ open, onClose, onJoined }: JoinAsUst
       onClose();
       onJoined(cls);
     } catch (err) {
-      if (err instanceof Error) {
-        if (err.message.includes('already a co-ustadh')) {
-          toast.error('You are already a co-teacher in this class');
-        } else if (err.message.includes('own class')) {
-          toast.error('Cannot join your own class as co-teacher');
-        } else if (err.message.includes('Invalid ustadh code')) {
-          toast.error('Invalid code. Please check and try again.');
-        } else {
-          toast.error(err.message);
-        }
-      } else {
-        toast.error('Failed to join class');
-      }
+      // The server names the class in its message, so show it as it is.
+      toast.error(err instanceof Error ? err.message : 'Failed to join class');
     } finally {
       setJoining(false);
     }
