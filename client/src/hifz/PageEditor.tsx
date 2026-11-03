@@ -3,18 +3,19 @@
  *
  * Layout per mockup:
  *   • Header:  Page number + close button
- *   • Body:    6 stacked cards. Each card has
+ *   • Body:    5 stacked progress cards. Each card has
  *                  - a brighter accent stripe on the left edge
  *                  - a circular icon badge
  *                  - bold title + 1-2 line description
  *                The card itself is a dark muted colour from the palette.
- *   • Footer:  "Mark as untouched" (only if a status is currently set)
+ *   • Footer:  "Mark as untouched" (only if a status is currently set), then a
+ *              divider and Retest Needed, kept apart from the progress statuses
  */
 import { useEffect } from 'react';
 import { X, Headphones } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { PageStatus } from '../../../shared/juz-map';
-import { PALETTE, ALL_STATUSES } from './palette';
+import { PALETTE, PROGRESSION } from './palette';
 
 interface Props {
   open: boolean;
@@ -154,7 +155,7 @@ export default function PageEditor({
 
         {/* 6 status cards */}
         <div className="p-3 flex flex-col gap-2">
-          {ALL_STATUSES.map(s => (
+          {PROGRESSION.map(s => (
             <div key={s} className="flex gap-2 items-stretch">
               <StatusCard
                 status={s}
@@ -194,6 +195,15 @@ export default function PageEditor({
             </button>
           </div>
         )}
+
+        {/* Retest Needed is kept apart from the progress statuses by a divider */}
+        <div className="px-3 pb-3 pt-3 border-t" style={{ borderColor: 'var(--c-border)' }}>
+          <StatusCard
+            status="YELLOW"
+            isCurrent={currentStatus === 'YELLOW'}
+            onClick={() => onSelect('YELLOW')}
+          />
+        </div>
       </div>
     </div>
   );

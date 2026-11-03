@@ -20,6 +20,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '2.3.4',
+    date: '3 Nov 2026',
+    sections: [{
+      items: [
+        'Retest Needed is now at the bottom of a page\'s status menu, below Mark as untouched, with a line between them.',
+      ],
+    }],
+  },
+  {
     version: '2.3.3',
     date: '30 Oct 2026',
     sections: [{
