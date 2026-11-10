@@ -6,6 +6,7 @@ import 'dotenv/config';
 // (Express 5 does this natively; when this upgrades, the import can go.)
 import 'express-async-errors';
 import express, { Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -56,6 +57,10 @@ app.use(
     credentials: true,
   })
 );
+// Compress the app's own files and API answers (the JavaScript is about a third
+// of its size once compressed). Images and audio are already compressed, so the
+// middleware leaves them alone.
+app.use(compression());
 app.use(express.json());
 app.use(cookieParser());
 app.use(session({

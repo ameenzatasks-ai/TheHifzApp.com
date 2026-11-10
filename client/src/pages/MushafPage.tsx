@@ -1,18 +1,21 @@
 /**
- * MushafPage — look at one page of the Mus'haf as it is printed.
+ * MushafPage — look at one page of the Mus'haf as it is printed, with its
+ * recitation playing underneath.
  *
  * Each page is a WebP image made from the PDF (server/public/quran-pages), so it
  * looks exactly like the printed page. While a page is on screen, the pages either
  * side are fetched in the background, so turning over shows at once. Pages you
  * have seen are kept by the app, so they open straight away next time.
  *
- * Reached from the page editor's "View page" button, as /mushaf?page=N.
+ * The recitation sits in a panel above the bottom bar, so it stays in reach while
+ * you read. Reached from the page editor's "View page" button, as /mushaf?page=N.
  */
 import { useEffect, useState } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, RotateCw } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { juzForPage } from '../../../shared/juz-map';
 import Spinner from '../components/Spinner';
+import RecitationPlayer from '../components/RecitationPlayer';
 
 const TOTAL_PAGES = 604;
 
@@ -86,8 +89,8 @@ export default function MushafPage() {
         </div>
       </div>
 
-      {/* Page */}
-      <div className="flex-1 px-3 py-4">
+      {/* Page. The bottom padding keeps the last lines clear of the recitation panel. */}
+      <div className="flex-1 px-3 py-4 pb-[calc(230px_+_56px_+_env(safe-area-inset-bottom))] md:pb-[260px]">
         <div className="mx-auto w-full" style={{ maxWidth: 520 }}>
           <div
             className="relative w-full overflow-hidden rounded-2xl"
@@ -175,6 +178,19 @@ export default function MushafPage() {
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Recitation, above the bottom bar so it is in reach while reading */}
+      <div
+        className="fixed left-0 right-0 bottom-[calc(56px_+_env(safe-area-inset-bottom))] md:bottom-0 md:left-[var(--sidebar-w)] z-30 px-4 pt-3 pb-3 border-t"
+        style={{ backgroundColor: 'var(--c-bg-card)', borderColor: 'var(--c-border)' }}
+      >
+        <div className="mx-auto w-full" style={{ maxWidth: 520 }}>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-center mb-2" style={{ color: 'var(--c-text-muted)' }}>
+            Recitation · Page {page}
+          </p>
+          <RecitationPlayer page={page} />
         </div>
       </div>
     </div>

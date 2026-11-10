@@ -20,6 +20,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '2.4.1',
+    date: '10 Nov 2026',
+    sections: [{
+      items: [
+        'The Mus\'haf page view plays that page\'s recitation underneath it, with the same controls as Listen.',
+        'Listen and the page view use the same player.',
+        'The app loads faster, because its files are sent compressed.',
+      ],
+    }],
+  },
+  {
     version: '2.4.0',
     date: '10 Nov 2026',
     sections: [{
