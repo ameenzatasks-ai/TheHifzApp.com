@@ -136,6 +136,7 @@ export default function GroupedPages({ grouped, totalTracked, studentId, onPageU
       <PracticeCounter
         open={practiceCounter.open}
         pageNumber={practiceCounter.page}
+        studentId={studentId}
         onConfirm={() => handlePracticeConfirm(practiceCounter.page)}
         onCancel={() => setPracticeCounter({ open: false, page: 0 })}
       />

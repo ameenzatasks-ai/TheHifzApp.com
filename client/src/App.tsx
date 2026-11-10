@@ -34,6 +34,7 @@ const StudentDawrLog       = lazy(() => import('./pages/hifz/StudentDawrLog'));
 const HifzHistoryPage      = lazy(() => import('./pages/class/HifzHistoryPage'));
 const SettingsPage         = lazy(() => import('./pages/SettingsPage'));
 const ListenPage           = lazy(() => import('./pages/ListenPage'));
+const MushafPage           = lazy(() => import('./pages/MushafPage'));
 
 /* ── Spinner fallback ────────────────────────────────────── */
 function PageFallback() {
@@ -135,6 +136,9 @@ function AppRoutes() {
 
           {/* Listen to the Quran — direct access (bottom nav) */}
           <Route path="/listen" element={<ListenPage />} />
+
+          {/* A page of the Mus'haf as printed — opened from the page editor */}
+          <Route path="/mushaf" element={<MushafPage />} />
 
           {/* Classes list */}
           <Route path="/classes" element={<ClassesList />} />

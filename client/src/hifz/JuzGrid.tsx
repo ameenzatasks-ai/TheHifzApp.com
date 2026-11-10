@@ -550,6 +550,7 @@ export default function JuzGrid({ studentId, initialJuz, onOpenAudit, onSaveNazi
       <PracticeCounter
         open={practiceCounter.open}
         pageNumber={practiceCounter.page}
+        studentId={studentId}
         onConfirm={async () => {
           await handleSetStatus('AMBER', practiceCounter.page);
           setPracticeCounter({ open: false, page: 0 });

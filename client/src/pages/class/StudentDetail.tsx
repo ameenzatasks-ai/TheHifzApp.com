@@ -16,6 +16,7 @@ import { hifzTasksApi, type HifzTask, type TaskScore } from '../../api/hifzTasks
 import type { PageStatus } from '../../../../shared/juz-map';
 import GroupedPages from '../../hifz/GroupedPages';
 import JuzGrid from '../../hifz/JuzGrid';
+import StudentPractice from './StudentPractice';
 import Spinner from '../../components/Spinner';
 import ConfirmModal from '../../components/ConfirmModal';
 
@@ -664,6 +665,11 @@ export default function StudentDetail() {
               studentId={sId}
               onPageUpdate={load}
             />
+
+            {/* Practice in progress: how close each page is to Ready for Final Test */}
+            <div className="mt-6">
+              <StudentPractice studentId={sId} />
+            </div>
 
             {/* See previous logs */}
             <button

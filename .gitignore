@@ -41,6 +41,10 @@ client/public/icons/
 
 server/public/audio/
 
+# Mus'haf page images, made from the PDF below. Served by the server; too large for git.
+server/public/quran-pages/
+مصحف-المدينة-المنورة.pdf
+
 # ── Merged in from the old 'The Hifz App' folder ──────────────────
 # Live archive.org S3 credentials — must never reach the public repo.
 Key.txt

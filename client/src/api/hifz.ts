@@ -40,6 +40,27 @@ export interface AuditEntry {
   note: string | null;
 }
 
+export interface PracticeState {
+  pageNumber: number;
+  /** Practices needed before the page is Ready for Final Test. */
+  target: number;
+  /** Practices counted since the page was last reset. */
+  count: number;
+  /** When each counted practice was logged, oldest first (ISO 8601, UTC). */
+  entries: string[];
+}
+
+export interface StudentPracticePage {
+  pageNumber: number;
+  count: number;
+  entries: string[];
+}
+
+export interface StudentPracticeList {
+  target: number;
+  pages: StudentPracticePage[];
+}
+
 export interface HifzCounts {
   studentId: number;
   counts: Record<PageStatus | 'UNTOUCHED', number>;
@@ -92,6 +113,22 @@ export const hifzApi = {
    */
   backfill: (currentPage: number, order: MemorisationOrder) =>
     api.post<{ marked: number; skipped: boolean }>('/hifz/backfill', { currentPage, order }),
+
+  /** Practice count for one of your own pages. */
+  practice: (page: number) => api.get<PracticeState>(`/hifz/practice/${page}`),
+  practiceTally: (page: number) => api.post<PracticeState>(`/hifz/practice/${page}/tally`),
+  practiceReset: (page: number) => api.post<PracticeState>(`/hifz/practice/${page}/reset`),
+
+  /** Ustadh: practice count for one of a student's pages. */
+  studentPractice: (studentId: number, page: number) =>
+    api.get<PracticeState>(`/hifz/practice/${page}/student/${studentId}`),
+  studentPracticeTally: (studentId: number, page: number) =>
+    api.post<PracticeState>(`/hifz/practice/${page}/student/${studentId}/tally`),
+  studentPracticeReset: (studentId: number, page: number) =>
+    api.post<PracticeState>(`/hifz/practice/${page}/student/${studentId}/reset`),
+  /** Ustadh: every page a student is practising, with the time of each practice. */
+  studentPracticeList: (studentId: number) =>
+    api.get<StudentPracticeList>(`/hifz/practice/student/${studentId}`),
 
   /** All status'd pages for self (excludes untouched). */
   allPages: () => api.get<AllPagesResponse>('/hifz/pages'),

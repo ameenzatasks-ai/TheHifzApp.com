@@ -20,6 +20,18 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '2.4.0',
+    date: '10 Nov 2026',
+    sections: [{
+      items: [
+        'Each practice is saved with its time, so your Ustadh can see how close a page is to Ready for Final Test.',
+        'Practice counts are saved to your account rather than the phone, so another person using the same phone sees their own count.',
+        'Tap View page in a page\'s menu to see that page of the Mus\'haf as it is printed.',
+        'Pages you have looked at open straight away the next time.',
+      ],
+    }],
+  },
+  {
     version: '2.3.4',
     date: '3 Nov 2026',
     sections: [{

@@ -47,6 +47,17 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
+            // Mus'haf page images never change, so once a page has been seen it stays
+            // on the device and opens at once next time.
+            urlPattern: /\/quran-pages\/\d{3}\.webp$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'quran-pages',
+              expiration: { maxEntries: 650, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
             options: { cacheName: 'google-fonts-cache', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } },
@@ -72,6 +83,7 @@ export default defineConfig({
       // The recitations live under server/public, not client/public, so in dev
       // they must be proxied too — otherwise Vite answers with the SPA shell.
       '/audio': { target: 'http://127.0.0.1:3001', changeOrigin: true },
+      '/quran-pages': { target: 'http://127.0.0.1:3001', changeOrigin: true },
     },
   },
 });

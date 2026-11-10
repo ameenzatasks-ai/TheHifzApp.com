@@ -12,7 +12,7 @@
  *              divider and Retest Needed, kept apart from the progress statuses
  */
 import { useEffect } from 'react';
-import { X, Headphones } from 'lucide-react';
+import { X, Headphones, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { PageStatus } from '../../../shared/juz-map';
 import { PALETTE, PROGRESSION } from './palette';
@@ -143,14 +143,25 @@ export default function PageEditor({
               Page {pageNumber}
             </h2>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg transition-all active:scale-90"
-            style={{ color: 'var(--c-text-muted)' }}
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => navigate(`/mushaf?page=${pageNumber}`)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95"
+              style={{ backgroundColor: 'var(--c-gold-bg)', color: 'var(--c-gold)' }}
+              title="View this page of the Mus'haf"
+            >
+              <BookOpen className="w-4 h-4" />
+              View page
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg transition-all active:scale-90"
+              style={{ color: 'var(--c-text-muted)' }}
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* 6 status cards */}

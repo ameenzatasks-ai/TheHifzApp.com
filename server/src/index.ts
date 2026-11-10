@@ -105,6 +105,15 @@ app.use('/audio', express.static(path.join(__dirname, '../public/audio'), {
   fallthrough: true,    // not here? fall through to the redirect below
 }));
 
+// The Mus'haf page images: one WebP per page (001.webp to 604.webp), made from
+// the PDF. They never change, so they are cached for a year. A missing page is
+// a real 404, not the app's index.html.
+app.use('/quran-pages', express.static(path.join(__dirname, '../public/quran-pages'), {
+  maxAge: '365d',
+  immutable: true,
+  fallthrough: false,
+}));
+
 // The 2.47 GB of recordings cannot ship with the deploy, so anything not on
 // disk is redirected to the copy hosted on archive.org.
 //

@@ -125,6 +125,19 @@ export async function runMigrations(): Promise<void> {
       note           TEXT
     );
 
+    -- ── Practice tallies (one row per practice, with its time) ──
+    -- A RESET row starts the count again for that page. Rows before it are kept.
+    CREATE TABLE IF NOT EXISTS practice_log (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id  INTEGER NOT NULL REFERENCES users(id),
+      page_number INTEGER NOT NULL CHECK(page_number BETWEEN 1 AND 604),
+      kind        TEXT    NOT NULL CHECK(kind IN ('TALLY','RESET')),
+      created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+      logged_by   INTEGER NOT NULL REFERENCES users(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_practice_student_page
+      ON practice_log(student_id, page_number, id);
+
     -- ── Indexes ─────────────────────────────────────────────────
     CREATE INDEX IF NOT EXISTS idx_page_reads_student    ON page_reads(student_id);
     CREATE INDEX IF NOT EXISTS idx_enrolments_class      ON enrolments(class_id);

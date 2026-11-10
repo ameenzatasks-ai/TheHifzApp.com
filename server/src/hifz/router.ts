@@ -375,4 +375,159 @@ router.get('/summary/student/:studentId', authenticate, async (req: AuthRequest,
   res.json({ studentId, counts: await buildSummary(studentId) });
 });
 
+// ── Practice tallies ───────────────────────────────────────────────────────
+//
+// Each practice is one row with its time, so the Ustadh can see how far a page
+// is from Ready for Final Test. A RESET row starts the count again for that
+// page, and the rows before it stay in the log. The counts are kept on the
+// server against the student's account, so they follow the student and not the
+// device they happen to be using.
+
+const PRACTICE_TARGET = 18;
+
+/** Practices counted since the page's last reset. Use with a WHERE on p.student_id. */
+const CURRENT_TALLIES = `
+  FROM practice_log p
+  WHERE p.student_id = ?
+    AND p.kind = 'TALLY'
+    AND p.id > COALESCE((
+      SELECT MAX(r.id) FROM practice_log r
+      WHERE r.student_id = p.student_id
+        AND r.page_number = p.page_number
+        AND r.kind = 'RESET'
+    ), 0)
+`;
+
+const stmtPracticePage = db.prepare(`
+  SELECT p.created_at ${CURRENT_TALLIES}
+    AND p.page_number = ?
+  ORDER BY p.id ASC
+`);
+
+const stmtPracticeAll = db.prepare(`
+  SELECT p.page_number, p.created_at ${CURRENT_TALLIES}
+  ORDER BY p.page_number ASC, p.id ASC
+`);
+
+const stmtInsertPractice = db.prepare(`
+  INSERT INTO practice_log (student_id, page_number, kind, logged_by)
+  VALUES (?, ?, ?, ?)
+`);
+
+async function practiceState(studentId: number, page: number) {
+  const rows = await stmtPracticePage.all(studentId, page) as Array<{ created_at: string }>;
+  return {
+    pageNumber: page,
+    target: PRACTICE_TARGET,
+    count: rows.length,
+    entries: rows.map(r => r.created_at),
+  };
+}
+
+/** Logs one practice. Returns false, and logs nothing, once the page is at the target. */
+async function recordTally(studentId: number, loggedBy: number, page: number): Promise<boolean> {
+  const rows = await stmtPracticePage.all(studentId, page);
+  if (rows.length >= PRACTICE_TARGET) return false;
+  await stmtInsertPractice.run(studentId, page, 'TALLY', loggedBy);
+  return true;
+}
+
+async function recordReset(studentId: number, loggedBy: number, page: number): Promise<void> {
+  await stmtInsertPractice.run(studentId, page, 'RESET', loggedBy);
+}
+
+function practicePage(raw: string, res: Response): number | null {
+  const page = parseInt(raw, 10);
+  if (isNaN(page) || page < 1 || page > 604) {
+    res.status(400).json({ error: 'page must be 1..604' });
+    return null;
+  }
+  return page;
+}
+
+router.get('/practice/:page', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const page = practicePage(req.params.page, res);
+  if (page === null) return;
+  res.json(await practiceState(req.user!.id, page));
+});
+
+router.post('/practice/:page/tally', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const page = practicePage(req.params.page, res);
+  if (page === null) return;
+  if (req.user!.role !== 'student') {
+    res.status(403).json({ error: 'Students only — ustadh must specify a studentId' }); return;
+  }
+  if (!await recordTally(req.user!.id, req.user!.id, page)) {
+    const state = await practiceState(req.user!.id, page);
+    res.status(409).json({ error: `This page already has ${PRACTICE_TARGET} practices.`, ...state });
+    return;
+  }
+  res.json(await practiceState(req.user!.id, page));
+});
+
+router.post('/practice/:page/reset', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const page = practicePage(req.params.page, res);
+  if (page === null) return;
+  if (req.user!.role !== 'student') {
+    res.status(403).json({ error: 'Students only — ustadh must specify a studentId' }); return;
+  }
+  await recordReset(req.user!.id, req.user!.id, page);
+  res.json(await practiceState(req.user!.id, page));
+});
+
+router.get('/practice/:page/student/:studentId', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const user = req.user!;
+  if (user.role !== 'ustadh') { res.status(403).json({ error: 'Ustadh only' }); return; }
+  const page = practicePage(req.params.page, res);
+  if (page === null) return;
+  const studentId = parseInt(req.params.studentId, 10);
+  if (!await ustadhTeaches(user.id, studentId)) { res.status(403).json({ error: 'Not your student' }); return; }
+  res.json(await practiceState(studentId, page));
+});
+
+router.post('/practice/:page/student/:studentId/tally', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const user = req.user!;
+  if (user.role !== 'ustadh') { res.status(403).json({ error: 'Ustadh only' }); return; }
+  const page = practicePage(req.params.page, res);
+  if (page === null) return;
+  const studentId = parseInt(req.params.studentId, 10);
+  if (!await ustadhTeaches(user.id, studentId)) { res.status(403).json({ error: 'Not your student' }); return; }
+  if (!await recordTally(studentId, user.id, page)) {
+    const state = await practiceState(studentId, page);
+    res.status(409).json({ error: `This page already has ${PRACTICE_TARGET} practices.`, ...state });
+    return;
+  }
+  res.json(await practiceState(studentId, page));
+});
+
+router.post('/practice/:page/student/:studentId/reset', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const user = req.user!;
+  if (user.role !== 'ustadh') { res.status(403).json({ error: 'Ustadh only' }); return; }
+  const page = practicePage(req.params.page, res);
+  if (page === null) return;
+  const studentId = parseInt(req.params.studentId, 10);
+  if (!await ustadhTeaches(user.id, studentId)) { res.status(403).json({ error: 'Not your student' }); return; }
+  await recordReset(studentId, user.id, page);
+  res.json(await practiceState(studentId, page));
+});
+
+/** Ustadh: every page the student is practising, each with the time of every practice counted. */
+router.get('/practice/student/:studentId', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const user = req.user!;
+  if (user.role !== 'ustadh') { res.status(403).json({ error: 'Ustadh only' }); return; }
+  const studentId = parseInt(req.params.studentId, 10);
+  if (!await ustadhTeaches(user.id, studentId)) { res.status(403).json({ error: 'Not your student' }); return; }
+  const rows = await stmtPracticeAll.all(studentId) as Array<{ page_number: number; created_at: string }>;
+  const byPage = new Map<number, string[]>();
+  for (const r of rows) {
+    const list = byPage.get(r.page_number) ?? [];
+    list.push(r.created_at);
+    byPage.set(r.page_number, list);
+  }
+  res.json({
+    target: PRACTICE_TARGET,
+    pages: Array.from(byPage, ([pageNumber, entries]) => ({ pageNumber, count: entries.length, entries })),
+  });
+});
+
 export default router;
