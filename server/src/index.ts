@@ -111,8 +111,11 @@ app.use('/audio', express.static(path.join(__dirname, '../public/audio'), {
 app.use('/quran-pages', express.static(path.join(__dirname, '../public/quran-pages'), {
   maxAge: '365d',
   immutable: true,
-  fallthrough: false,
 }));
+// Anything not served above is a page that does not exist.
+app.use('/quran-pages', (_req: Request, res: Response): void => {
+  res.status(404).json({ error: 'Page not found' });
+});
 
 // The 2.47 GB of recordings cannot ship with the deploy, so anything not on
 // disk is redirected to the copy hosted on archive.org.
